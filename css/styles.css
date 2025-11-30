@@ -626,8 +626,8 @@ select {
 }
 
 .app-shell {
-  max-width: 100%;
-  margin: auto auto;
+  width: 100%;
+  /* margin: 0 auto; */
   padding: 16px;
 }
 
