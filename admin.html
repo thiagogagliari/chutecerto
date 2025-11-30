@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bolão da Copa - Admin</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      /* Estilo para a lista de jogos do admin */
+      #matches-list,
+      #matches-list-admin {
+        display: block;
+        width: 100%;
+        color: #ffffff; /* texto branco */
+      }
+
+      /* Garantindo que as linhas de jogos também fiquem legíveis */
+      .admin-match-row,
+      .admin-match-row div,
+      .admin-match-row select,
+      .admin-match-row input {
+        color: #ffffff;
+      }
+
+      /* select com texto branco dentro */
+      .admin-match-status select option {
+        color: #ffffff;
+        background: #0b0f1c; /* fundo dark pra manter padrão */
+      }
+    </style>
+  </head>
+  <body class="app-body">
+    <div class="app-shell">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="app-header-left">
+          <span class="brand-badge">Bolão da Copa</span>
+          <h1>Painel do administrador</h1>
+          <p>
+            Cadastre jogos, atualize resultados e gerencie o calendário do
+            bolão.
+          </p>
+        </div>
+
+        <div class="app-header-right">
+          <a href="dashboard.html" class="btn-secondary">⚽ Meus palpites</a>
+          <a href="ranking.html" class="btn-secondary">🏆 Ranking</a>
+          <button id="logout-btn" class="btn-secondary">Sair</button>
+        </div>
+      </header>
+
+      <!-- Conteúdo -->
+      <main class="app-main">
+        <!-- Card de criação de jogo -->
+        <section class="card admin-form-card">
+          <h2>Cadastrar novo jogo</h2>
+          <form
+            id="create-match-form"
+            class="admin-form-grid"
+            autocomplete="off"
+          >
+            <div class="admin-form-group">
+              <label for="round">Rodada</label>
+              <input type="number" id="round" min="1" placeholder="Ex: 1" />
+            </div>
+
+            <div class="admin-form-group">
+              <label for="home-team">Time da casa</label>
+              <input
+                type="text"
+                id="home-team"
+                placeholder="Nome do mandante"
+              />
+            </div>
+
+            <div class="admin-form-group">
+              <label for="away-team">Time visitante</label>
+              <input
+                type="text"
+                id="away-team"
+                placeholder="Nome do visitante"
+              />
+            </div>
+
+            <div class="admin-form-group">
+              <label for="kickoff">Data e hora</label>
+              <input type="datetime-local" id="kickoff" />
+            </div>
+
+            <div class="admin-form-group">
+              <label for="home-logo-url">Escudo do mandante (URL)</label>
+              <input
+                type="text"
+                id="home-logo-url"
+                placeholder="https://link-do-escudo.png"
+              />
+            </div>
+
+            <div class="admin-form-group">
+              <label for="away-logo-url">Escudo do visitante (URL)</label>
+              <input
+                type="text"
+                id="away-logo-url"
+                placeholder="https://link-do-escudo.png"
+              />
+            </div>
+
+            <div class="admin-form-actions">
+              <button type="button" id="create-match-btn" class="btn-primary">
+                ➕ Salvar jogo
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Card de jogos cadastrados -->
+        <section class="card admin-matches-card">
+          <div class="admin-matches-header">
+            <h2>Jogos cadastrados</h2>
+            <span class="admin-matches-hint">
+              Atualize status, resultados e confira se as datas estão corretas.
+            </span>
+          </div>
+
+          <!-- container com dois ids para ser compatível com diferentes JS -->
+          <div id="matches-list-admin">
+            <div id="matches-list">Carregando jogos cadastrados...</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="js/admin.js"></script>
+  </body>
+</html>

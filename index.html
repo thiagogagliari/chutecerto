@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bolão da Copa - Login</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="auth-body">
+    <div class="auth-wrapper">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <span class="brand-badge">Bolão da Copa</span>
+          <h1>Bem-vindo ao bolão</h1>
+          <p>Entre ou crie sua conta para começar a palpitar nos jogos.</p>
+        </div>
+
+        <div class="auth-forms">
+          <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">Login</button>
+            <button class="auth-tab" data-tab="signup">Cadastro</button>
+          </div>
+
+          <!-- LOGIN -->
+          <div id="login-form" class="auth-form active">
+            <label for="login-email">Email</label>
+            <input
+              type="email"
+              id="login-email"
+              placeholder="seuemail@exemplo.com"
+              autocomplete="email"
+            />
+
+            <label for="login-password">Senha</label>
+            <input
+              type="password"
+              id="login-password"
+              placeholder="Sua senha"
+              autocomplete="current-password"
+            />
+
+            <button id="login-btn" class="btn-primary">Entrar</button>
+          </div>
+
+          <!-- CADASTRO -->
+          <div id="signup-form" class="auth-form">
+            <label for="signup-username">Nome de usuário</label>
+            <input
+              type="text"
+              id="signup-username"
+              placeholder="Como você quer aparecer no bolão?"
+            />
+
+            <label for="signup-email">Email</label>
+            <input
+              type="email"
+              id="signup-email"
+              placeholder="seuemail@exemplo.com"
+              autocomplete="email"
+            />
+
+            <label for="signup-password">Senha</label>
+            <input
+              type="password"
+              id="signup-password"
+              placeholder="Crie uma senha"
+              autocomplete="new-password"
+            />
+
+            <label for="favorite-team">Time do coração</label>
+            <select id="favorite-team">
+              <option value="atleticomg">Atlético/MG</option>
+              <option value="bahia">Bahia</option>
+              <option value="botafogo">Botafogo/RJ</option>
+              <option value="bragantino">RB Bragantino</option>
+              <option value="ceara">Ceará</option>
+              <option value="corinthians">Corinthians</option>
+              <option value="coritiba">Coritiba</option>
+              <option value="cruzeiro">Cruzeiro</option>
+              <option value="flamengo">Flamengo</option>
+              <option value="fluminense">Fluminense</option>
+              <option value="fortaleza">Fortaleza</option>
+              <option value="gremio">Grêmio</option>
+              <option value="internacional">Internacional</option>
+              <option value="palmeiras">Palmeiras</option>
+              <option value="santos">Santos</option>
+              <option value="saopaulo">São Paulo</option>
+              <option value="sport">Sport</option>
+              <option value="vasco">Vasco da Gama</option>
+              <option value="vitoria">Vitória/BA</option>
+              <option value="goias">Goiás</option>
+              <option value="avai">Avaí</option>
+              <option value="chapecoense">Chapecoense</option>
+              <option value="juventude">Juventude</option>
+              <option value="criciuma">Criciúma</option>
+              <option value="figueirense">Figueirense</option>
+              <option value="pontepreta">Ponte Preta</option>
+              <option value="atleticopr">Atlético/PR</option>
+              <option value="atleticogo">Atlético/GO</option>
+              <option value="santacruzpe">Santa Cruz/PE</option>
+              <option value="mirassol">Mirassol</option>
+              <option value="novorizontino">Novorizontino</option>
+              <option value="remo">Remo</option>
+              <option value="brasildepelotas">Brasil de Pelotas</option>
+              <option value="paysandu">Paysandu</option>
+              <option value="vinanovagoi">Vila Nova/GO</option>
+              <option value="arsenal">Arsenal</option>
+              <!-- pode adicionar mais aqui -->
+            </select>
+
+            <button id="signup-btn" class="btn-primary">Cadastrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seus scripts -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/auth.js"></script>
+
+    <!-- Script simples para alternar entre Login / Cadastro -->
+    <script>
+      const tabs = document.querySelectorAll(".auth-tab");
+      const loginForm = document.getElementById("login-form");
+      const signupForm = document.getElementById("signup-form");
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          tabs.forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+
+          const tabName = tab.getAttribute("data-tab");
+          if (tabName === "login") {
+            loginForm.classList.add("active");
+            signupForm.classList.remove("active");
+          } else {
+            signupForm.classList.add("active");
+            loginForm.classList.remove("active");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

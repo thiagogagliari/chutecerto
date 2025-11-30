@@ -1,0 +1,1493 @@
+body {
+  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #ff3c00;
+  color: #000;
+}
+
+h1 {
+  text-align: center;
+}
+
+a{
+  text-decoration: none;
+}
+
+#user-info p {
+  font-size: 30px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#auth-container,
+#dashboard-container,
+#admin-container {
+  max-width: 500px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+input, select, button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.match-card {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+}
+
+.palpite-line {
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  background: #eee;
+  margin-left: 5px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.ranking-pos {
+  width: 30px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.ranking-avatar {
+  width: 30px;
+  height: 30px;
+}
+
+.ranking-name {
+  flex: 1;
+}
+
+.ranking-points {
+  font-weight: bold;
+}
+
+.medal-gold {
+  color: #d4af37;
+}
+
+.medal-silver {
+  color: #b0b0b0;
+}
+
+.medal-bronze {
+  color: #cd7f32;
+}
+
+.ranking-me {
+  background: #e7f4ff;
+}
+
+/* Lista de jogos em grid */
+#matches-list {
+  color: #000;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* Card de jogo mais bonito */
+.match-card {
+  border: 1px solid #ddd;
+  padding: 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Topo do card: times e informações */
+.match-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.match-team {
+  text-align: center;
+}
+
+.match-team-name {
+  font-weight: bold;
+}
+
+.match-vs {
+  display: inline-grid;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.match-time {
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.match-status {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+.match-status.scheduled {
+  background: #1565c0;
+  color: #fff;
+}
+
+.match-status.live {
+  background: #d32f2f;
+  color: #ffffff;
+}
+
+.match-status.finished {
+  background: #77bf7d;
+  color: #fdfefe;
+}
+
+.match-score {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+/* Parte de baixo: duas colunas (seu palpite x palpite da galera) */
+.match-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.match-column h4 {
+  margin: 0 0 6px 0;
+  font-size: 0.9rem;
+}
+
+.match-column input[type="number"] {
+  width: 100%;
+}
+
+.match-column label {
+  font-size: 0.8rem;
+}
+
+.match-column button {
+  margin-top: 6px;
+  width: 100%;
+}
+
+/* Responsivo: em telas menores, as colunas ficam uma embaixo da outra */
+@media (max-width: 600px) {
+  .match-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+.match-team-logo {
+  width: 40px;
+  height: 40px;
+  background: #f0f0f0;
+  margin-bottom: 4px;
+}
+
+.placeholder-logo {
+  display: inline-block;
+}
+
+.match-card.saved-palpite {
+  background: #e6ffe6; /* verde clarinho */
+  border-color: #81c784;
+}
+
+.match-card.no-palpite {
+  background: #ffffff; /* padrão */
+}
+
+/* Estados do card de jogo */
+.match-card.state-upcoming {
+  background: #fffde7; /* amarelo bem claro - jogo ainda vai começar */
+}
+
+.match-card.state-finished {
+  background: #eeeeee; /* cinza claro - jogo finalizado */
+}
+
+.match-card.state-default {
+  background: #ffffff; /* padrão - jogo rolando ou sem status específico */
+}
+
+/* Status do palpite do usuário */
+.palpite-status {
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.palpite-ok {
+  background: #2e7d32;
+  color: #ffffff;
+}
+
+.palpite-penden
+t {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+#round-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+#round-nav button {
+  width: auto;
+  padding: 6px 10px;
+}
+
+#current-round-label {
+  font-weight: bold;
+}
+
+/* Navegação de modo de ranking */
+#ranking-nav-mode {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+#ranking-nav-mode button {
+  padding: 6px 10px;
+  width: auto;
+}
+
+#ranking-nav-mode button.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Navegação de rodadas no ranking */
+#round-nav-ranking {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+#round-nav-ranking button {
+  width: auto;
+  padding: 6px 10px;
+}
+
+#current-round-label {
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Lista de ranking */
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.ranking-pos {
+  width: 32px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.ranking-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.ranking-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 25%;
+  background: #ccc;
+}
+
+.ranking-name {
+  flex: 1;
+}
+
+.ranking-points {
+  width: 90px;
+  text-align: right;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.ranking-move {
+  width: 90px;
+  text-align: right;
+  font-size: 0.8rem;
+}
+
+/* medalhas top 3 */
+.medal-gold {
+  color: #d4af37;
+}
+
+.medal-silver {
+  color: #b0b0b0;
+}
+
+.medal-bronze {
+  color: #cd7f32;
+}
+
+/* destaque para o próprio usuário */
+.ranking-me {
+  background: #e7f4ff;
+}
+
+/* movimento entre rodadas */
+.move-up {
+  color: #2e7d32;
+}
+
+.move-down {
+  color: #c62828;
+}
+
+.move-same {
+  color: #757575;
+}
+
+.move-new {
+  color: #1565c0;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.user-avatar-header {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ccc;
+}
+
+.user-avatar-placeholder {
+  display: inline-block;
+}
+
+/* ===== Layout geral da tela de auth ===== */
+.auth-body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #2e3446 0, #050811 55%, #000 100%);
+  color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-wrapper {
+  width: 100%;
+  max-width: 420px;
+  padding: 16px;
+}
+
+.auth-card {
+  background: #151824;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ===== Cabeçalho da auth ===== */
+.auth-brand h1 {
+  font-size: 1.4rem;
+  margin: 8px 0 4px;
+}
+
+.auth-brand p {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.brand-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6a00, #ff9100);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+
+/* ===== Tabs (Login / Cadastro) ===== */
+.auth-forms {
+  margin-top: 10px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 4px;
+  background: #1e2233;
+  border-radius: 999px;
+  padding: 2px;
+  margin-bottom: 12px;
+}
+
+.auth-tab {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 0;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: transparent;
+  color: #9ca3af;
+  transition: all 0.15s ease;
+}
+
+.auth-tab.active {
+  background: #ff6a00;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ===== Formulários ===== */
+.auth-form {
+  display: none;
+}
+
+.auth-form.active {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-form label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.auth-form input,
+.auth-form select {
+  margin-top: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #3b425a;
+  background: #090b13;
+  color: #f5f5f5;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.auth-form input::placeholder {
+  color: #6b7280;
+}
+
+.auth-form input:focus,
+.auth-form select:focus {
+  border-color: #ff6a00;
+  box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.4);
+  background: #050811;
+}
+
+/* ===== Botões padrão (app todo) ===== */
+button {
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 8px 14px;
+  transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Botão principal laranja (estilo Betano) */
+.btn-primary,
+#login-btn,
+#signup-btn,
+#create-match-btn,
+#save-res,
+#save-res-btn {
+  background: linear-gradient(135deg, #ff6a00, #ff9100);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(255, 106, 0, 0.45);
+}
+
+.btn-primary:hover,
+#login-btn:hover,
+#signup-btn:hover,
+#create-match-btn:hover,
+#save-res:hover,
+#save-res-btn:hover {
+  background: linear-gradient(135deg, #ff7b1a, #ffb347);
+}
+
+/* Botões secundários (navegação, sair, etc) – cinza escuro */
+#logout-btn,
+#prev-round-btn,
+#next-round-btn,
+#mode-geral,
+#mode-round {
+  background: #262b3d;
+  color: #e5e7eb;
+  box-shadow: none;
+}
+
+#logout-btn:hover,
+#prev-round-btn:hover,
+#next-round-btn:hover,
+#mode-geral:hover,
+#mode-round:hover {
+  background: #32384d;
+}
+
+/* Garantir que inputs e select no resto do app fiquem ok no fundo escuro */
+input,
+select {
+  font-family: inherit;
+}
+
+/* Ajuste responsivo para telas menores */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 16px 14px;
+  }
+
+  .auth-brand h1 {
+    font-size: 1.2rem;
+  }
+}
+
+/* ===== Layout geral da aplicação (dashboard, ranking, admin) ===== */
+.app-body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #2e3446 0, #050811 55%, #000 100%);
+  color: #f5f5f5;
+}
+
+.app-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== Header ===== */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.app-header-left h1 {
+  margin: 6px 0 4px;
+  font-size: 1.4rem;
+}
+
+.app-header-left p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.app-header-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Reaproveita brand-badge da tela de login */
+.brand-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6a00, #ff9100);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+
+/* ===== Cards genéricos ===== */
+.card {
+  background: #151824;
+  border-radius: 14px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+/* User info */
+.user-card {
+  display: flex;
+  align-items: center;
+}
+
+/* Round nav card */
+.round-card {
+  text-align: center;
+}
+
+/* Matches card */
+.matches-card {
+  padding-top: 12px;
+}
+
+.matches-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.matches-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.matches-hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* ===== Botões ===== */
+.btn-secondary,
+#logout-btn,
+#prev-round-btn,
+#next-round-btn,
+.app-header-right a {
+  background: #262b3d;
+  color: #e5e7eb;
+  border-radius: 999px;
+  padding: 8px 14px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.btn-secondary:hover,
+#logout-btn:hover,
+#prev-round-btn:hover,
+#next-round-btn:hover,
+.app-header-right a:hover {
+  background: #32384d;
+}
+
+/* Round nav layout */
+#round-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+#current-round-label {
+  font-weight: 600;
+}
+
+/* ===== User header dentro da dashboard (usei do passo anterior) ===== */
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar-header {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ccc;
+}
+
+.user-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #374151;
+}
+
+/* ===== Lista de jogos em grid ===== */
+#matches-list {
+  color: #000;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+/* ===== Cards de jogo ===== */
+.match-card {
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: #111320;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* estados visuais do card */
+.match-card.state-upcoming {
+  border-color: rgba(248, 196, 113, 0.7);
+}
+
+.match-card.state-finished {
+  border-color: rgba(16, 185, 129, 0.6);
+  opacity: 0.96;
+}
+
+.match-card.state-default {
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+/* Topo do card */
+.match-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 6px;
+}
+
+.match-team {
+  text-align: center;
+}
+
+.match-team-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.match-team-logo {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 2px;
+}
+
+.placeholder-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1f2937;
+}
+
+.match-vs {
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.match-time {
+  font-size: 1.20rem;
+  opacity: 0.8;
+}
+
+/* Status do jogo */
+.match-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  margin-top: 4px;
+}
+
+/* agendado = azul */
+.match-status.scheduled {
+  background: #1e3a8a;
+  color: #e5e7eb;
+}
+
+/* ao vivo = vermelho forte (já ajustado antes) */
+.match-status.live {
+  background: #d32f2f;
+  color: #ffffff;
+}
+
+/* finalizado = verde */
+.match-status.finished {
+  background: #14532d;
+  color: #bbf7d0;
+}
+
+/* Placar final */
+.match-score {
+  margin-top: 4px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Status do palpite */
+.palpite-status {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.palpite-ok {
+  background: #2e7d32;
+  color: #ffffff;
+}
+
+.palpite-pendente {
+  background: #ff6a00;
+  color: #ffffff;
+}
+
+/* Mensagens de resultado */
+.resultado-msg {
+  margin-top: 4px;
+  font-size: 0.78rem;
+}
+
+.resultado-msg.exato {
+  margin: 10px;
+  font-size: 1.10rem;
+  color: #089037;
+  font-weight: 800;
+}
+
+.resultado-msg.resultado {
+  color: #4ade80;
+}
+
+.resultado-msg.pontos {
+  margin: 10px;
+  font-size: 1.10rem;
+  font-weight: 800;
+  color: #60a5fa;
+}
+
+/* Parte de baixo do card (2 colunas) */
+.match-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.match-column h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.85rem;
+}
+
+.match-column label {
+  font-size: 0.78rem;
+}
+
+.match-column input[type="number"] {
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #374151;
+  background: #020617;
+  color: #e5e7eb;
+  margin-bottom: 4px;
+}
+
+.match-column input[type="number"]:disabled {
+  opacity: 0.6;
+}
+
+.match-column button {
+  margin-top: 6px;
+  width: 100%;
+}
+
+/* Estatísticas da galera */
+.palpite-stats {
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+  opacity: 0.9;
+}
+
+.palpite-list {
+  font-size: 0.75rem;
+}
+
+/* Responsivo */
+@media (max-width: 720px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .app-header-right {
+    align-self: stretch;
+    justify-content: flex-end;
+  }
+
+  .match-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Ranking moderno ===== */
+
+.ranking-mode-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#ranking-nav-mode {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+#ranking-nav-mode button {
+  padding: 6px 12px;
+  width: auto;
+  background: #262b3d;
+  color: #e5e7eb;
+}
+
+#ranking-nav-mode button.active {
+  background: #ff6a00;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+#round-nav-ranking {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+#round-nav-ranking.hidden {
+  display: none;
+}
+
+.ranking-search-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#ranking-search {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #374151;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+#ranking-search::placeholder {
+  color: #6b7280;
+}
+
+#ranking-search:focus {
+  border-color: #ff6a00;
+  box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.5);
+}
+
+.ranking-search-hint {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* Info do usuário no ranking */
+.ranking-user-card p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Lista de ranking */
+.ranking-list-card {
+  padding: 0;
+}
+
+#ranking-list {
+  border-radius: 0 0 14px 14px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.6);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.ranking-item:hover {
+  background: rgba(31, 41, 55, 0.7);
+}
+
+.ranking-pos {
+  width: 32px;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* medalhas top 3 */
+.medal-gold {
+  color: #facc15;
+}
+
+.medal-silver {
+  color: #d1d5db;
+}
+
+.medal-bronze {
+  color: #f97316;
+}
+
+.ranking-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ranking-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #374151;
+}
+
+.ranking-name {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+
+.ranking-team {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.ranking-points {
+  width: 80px;
+  text-align: right;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.ranking-move {
+  width: 80px;
+  text-align: right;
+  font-size: 0.78rem;
+}
+
+/* destaque para o próprio usuário */
+.ranking-me {
+  background: rgba(37, 99, 235, 0.2);
+}
+
+/* movimento entre rodadas */
+.move-up {
+  color: #4ade80;
+}
+
+.move-down {
+  color: #f87171;
+}
+
+.move-same {
+  color: #9ca3af;
+}
+
+.move-new {
+  color: #60a5fa;
+}
+
+/* ===== Página de perfil ===== */
+
+.profile-card {
+  padding: 12px 14px;
+}
+
+.profile-user-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-avatar-placeholder {
+  background: #374151;
+}
+
+.profile-username {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.profile-team {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.profile-total-points {
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.profile-badge {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+/* resumo por rodada */
+.profile-summary-card h2,
+.profile-predictions-card h2 {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+.profile-round-line {
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+/* lista de palpites */
+.profile-predictions-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.profile-predictions-header select {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid #374151;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+}
+
+.profile-table-wrapper {
+  overflow-x: auto;
+}
+
+.profile-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.profile-table th,
+.profile-table td {
+  border-bottom: 1px solid rgba(55, 65, 81, 0.8);
+  padding: 6px 4px;
+  text-align: left;
+}
+
+.profile-table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #9ca3af;
+}
+
+.profile-match-main {
+  font-weight: 500;
+}
+
+.profile-match-date {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* responsivo perfil */
+@media (max-width: 640px) {
+  .profile-user-header {
+    align-items: flex-start;
+  }
+
+  .profile-predictions-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ===== Admin: formulário de jogos ===== */
+
+.admin-form-card h2,
+.admin-matches-card h2 {
+  margin-top: 0;
+  font-size: 1.05rem;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-form-group label {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.admin-form-group input {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+}
+
+.admin-form-group input::placeholder {
+  color: #6b7280;
+}
+
+.admin-form-group input:focus {
+  border-color: #ff6a00;
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.4);
+}
+
+.admin-form-actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+/* ===== Admin: lista de jogos ===== */
+
+.admin-matches-card {
+  padding-top: 12px;
+}
+
+.admin-matches-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.admin-matches-header h2 {
+  margin: 0;
+}
+
+.admin-matches-hint {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+/* Cada linha de jogo no admin você estiliza assim:
+   (assumindo que seu admin.js cria algum tipo de estrutura de linhas) */
+
+.admin-match-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr 0.8fr 0.8fr 0.8fr auto;
+  gap: 6px;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.7);
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.admin-match-row-header {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #9ca3af;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.9);
+}
+
+.admin-match-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-match-main .teams {
+  font-weight: 500;
+}
+
+.admin-match-main .date {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.admin-match-status {
+  font-size: 0.8rem;
+}
+
+.admin-match-status select {
+  padding: 4px 6px;
+  border-radius: 999px;
+  border: 1px solid #374151;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 0.75rem;
+}
+
+.admin-score-inputs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-score-inputs input {
+  width: 36px;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #374151;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 0.8rem;
+}
+
+.admin-round-label {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.admin-actions button {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+}
+
+/* Responsivo admin */
+@media (max-width: 800px) {
+  .admin-match-row {
+    grid-template-columns: 1.5fr 1fr 0.9fr;
+    grid-template-areas:
+      "main main main"
+      "round status score"
+      "actions actions actions";
+  }
+
+  .admin-match-main {
+    grid-area: main;
+  }
+
+  .admin-round-label {
+    grid-area: round;
+  }
+
+  .admin-match-status {
+    grid-area: status;
+  }
+
+  .admin-score-inputs {
+    grid-area: score;
+  }
+
+  .admin-actions {
+    grid-area: actions;
+  }
+}
+
+
+
+
+
+
+
+
+

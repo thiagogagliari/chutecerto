@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bolão da Copa - Ranking</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="app-body">
+    <div class="app-shell">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="app-header-left">
+          <span class="brand-badge">Bolão da Copa</span>
+          <h1>Ranking</h1>
+          <p>
+            Veja quem está voando no bolão e acompanhe a evolução rodada a
+            rodada.
+          </p>
+        </div>
+
+        <div class="app-header-right">
+          <a href="dashboard.html" class="btn-secondary">⚽ Meus palpites</a>
+          <button id="logout-btn" class="btn-secondary">Sair</button>
+        </div>
+      </header>
+
+      <!-- Conteúdo -->
+      <main class="app-main">
+        <!-- Modo geral x por rodada -->
+        <section class="card ranking-mode-card">
+          <div id="ranking-nav-mode">
+            <button id="mode-geral" class="active">Ranking geral</button>
+            <button id="mode-round">Ranking por rodada</button>
+          </div>
+
+          <!-- Navegação de rodadas (aparece só no modo por rodada) -->
+          <div id="round-nav-ranking" class="hidden">
+            <button id="prev-round-btn">◀ Rodada anterior</button>
+            <span id="current-round-label">Rodada -</span>
+            <button id="next-round-btn">Próxima rodada ▶</button>
+          </div>
+
+          <!-- Barra de busca -->
+          <div class="ranking-search-wrapper">
+            <input
+              type="text"
+              id="ranking-search"
+              placeholder="Buscar usuário pelo nome..."
+            />
+            <span class="ranking-search-hint"
+              >Clique em um usuário para ver o perfil completo.</span
+            >
+          </div>
+        </section>
+
+        <!-- Info do usuário logado -->
+        <section class="card ranking-user-card">
+          <div id="ranking-current-user"></div>
+        </section>
+
+        <!-- Lista do ranking -->
+        <section class="card ranking-list-card">
+          <div id="ranking-list">Carregando ranking...</div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="js/ranking.js"></script>
+  </body>
+</html>

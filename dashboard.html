@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bolão da Copa - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="app-body">
+    <div class="app-shell">
+      <!-- TOPO -->
+      <header class="app-header">
+        <div class="app-header-left">
+          <span class="brand-badge">Bolão da Copa</span>
+          <h1>Meus palpites</h1>
+          <p>
+            Acompanhe os jogos, salve seus palpites e veja sua evolução no
+            ranking.
+          </p>
+        </div>
+
+        <div class="app-header-right">
+          <a href="ranking.html" class="btn-secondary">🏆 Ranking</a>
+          <button id="logout-btn" class="btn-secondary">Sair</button>
+        </div>
+      </header>
+
+      <!-- CONTEÚDO -->
+      <main class="app-main">
+        <!-- Info do usuário -->
+        <section class="card user-card">
+          <div id="user-info"></div>
+        </section>
+
+        <!-- Navegação da rodada -->
+        <section class="card round-card">
+          <div id="round-nav">
+            <button id="prev-round-btn">◀ Rodada anterior</button>
+            <span id="current-round-label">Rodada -</span>
+            <button id="next-round-btn">Próxima rodada ▶</button>
+          </div>
+        </section>
+
+        <!-- Lista de jogos -->
+        <section class="card matches-card">
+          <div class="matches-header">
+            <h2>Jogos da rodada</h2>
+            <span class="matches-hint"
+              >Palpites são permitidos apenas antes do início de cada
+              jogo.</span
+            >
+          </div>
+
+          <div id="matches-list">Carregando jogos...</div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="js/dashboard.js"></script>
+  </body>
+</html>

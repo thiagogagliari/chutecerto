@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bolão da Copa - Perfil do Usuário</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="app-body">
+    <div class="app-shell">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="app-header-left">
+          <span class="brand-badge">Bolão da Copa</span>
+          <h1 id="profile-title">Perfil</h1>
+          <p>
+            Veja todos os palpites, pontos por jogo e desempenho por rodada.
+          </p>
+        </div>
+
+        <div class="app-header-right">
+          <a href="ranking.html" class="btn-secondary">🏆 Voltar ao ranking</a>
+          <button id="logout-btn" class="btn-secondary">Sair</button>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <!-- Card com info do usuário -->
+        <section class="card profile-card">
+          <div id="profile-user-info">Carregando usuário...</div>
+        </section>
+
+        <!-- Resumo por rodada -->
+        <section class="card profile-summary-card">
+          <h2>Resumo por rodada</h2>
+          <div id="profile-round-summary">Carregando resumo...</div>
+        </section>
+
+        <!-- Lista de palpites -->
+        <section class="card profile-predictions-card">
+          <div class="profile-predictions-header">
+            <h2>Palpites e pontos por jogo</h2>
+            <select id="profile-round-filter">
+              <option value="">Todas as rodadas</option>
+            </select>
+          </div>
+
+          <div id="profile-predictions-list">Carregando palpites...</div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="js/user-profile.js"></script>
+  </body>
+</html>
