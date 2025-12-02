@@ -13,6 +13,10 @@
         <div class="app-header-left">
           <span class="brand-badge">Bolão da Copa</span>
           <h1>Meus palpites</h1>
+          <button id="rules-btn" class="btn-secondary">
+            ℹ Regras de Pontuação
+          </button>
+
           <p>
             Acompanhe os jogos, salve seus palpites e veja sua evolução no
             ranking.
@@ -20,7 +24,7 @@
         </div>
 
         <div class="app-header-right">
-          <a href="ranking.html" class="btn-secondary">🏆 Ranking</a>
+          <a href="ranking.html" class="btn-secondary">Ranking</a>
           <button id="logout-btn" class="btn-secondary">Sair</button>
         </div>
       </header>
@@ -57,5 +61,24 @@
     </div>
 
     <script type="module" src="js/dashboard.js"></script>
+    <div id="rules-modal" class="modal-overlay">
+      <div class="modal-card">
+        <h2>Regras de Pontuação</h2>
+        <p><strong>Resultado correto</strong> — 3 pts</p>
+        <p><strong>Gols do mandante</strong> corretos — 2 pts</p>
+        <p><strong>Gols do visitante</strong> corretos — 2 pts</p>
+        <p><strong>Diferença de gols</strong> correta — 3 pts</p>
+        <p><strong>Bônus 2x</strong> dobra sua pontuação dessa partida</p>
+        <hr />
+        <p>
+          <small
+            >Os pontos são computados apenas após o jogo estar
+            finalizado.</small
+          >
+        </p>
+
+        <button id="rules-close" class="btn-primary">OK, entendi!</button>
+      </div>
+    </div>
   </body>
 </html>

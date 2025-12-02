@@ -201,6 +201,66 @@ function updateRoundLabel() {
     nextRoundBtn.disabled = idx === -1 || idx >= rounds.length - 1;
 }
 
+// ===== FUNÇÃO LOCAL PARA CALCULAR DETALHE DA PONTUAÇÃO =====
+// Mesma regra do admin:
+// - +3 resultado correto
+// - +2 gols mandante corretos
+// - +2 gols visitante corretos
+// - +3 diferença de gols correta
+// - se bônus: total * 2
+function calcularDetalhePontuacao(
+  realHome,
+  realAway,
+  predHome,
+  predAway,
+  usedBonus
+) {
+  let base = 0;
+  const partes = [];
+
+  const diffReal = realHome - realAway;
+  const diffPred = predHome - predAway;
+
+  const resReal = diffReal > 0 ? "H" : diffReal < 0 ? "A" : "D";
+  const resPred = diffPred > 0 ? "H" : diffPred < 0 ? "A" : "D";
+
+  // resultado correto
+  if (resReal === resPred) {
+    base += 3;
+    partes.push("3 (resultado)");
+  }
+
+  // gols mandante
+  if (realHome === predHome) {
+    base += 2;
+    partes.push("2 (gols mandante)");
+  }
+
+  // gols visitante
+  if (realAway === predAway) {
+    base += 2;
+    partes.push("2 (gols visitante)");
+  }
+
+  // diferença de gols
+  if (diffReal === diffPred) {
+    base += 3;
+    partes.push("3 (diferença de gols)");
+  }
+
+  let total = base;
+  if (usedBonus && base > 0) {
+    total = base * 2;
+  }
+
+  return {
+    total,
+    base,
+    partes,
+    usedBonus: !!usedBonus,
+  };
+}
+
 async function renderMatchesForCurrentRound() {
   matchesListEl.innerHTML = "";
 
@@ -277,10 +337,12 @@ async function renderMatchesForCurrentRound() {
     // status de palpite
     const palpiteStatusHtml = userHasPred
       ? `<span class="palpite-status palpite-ok">✔ Palpite enviado</span>`
-      : `<span class="palpite-status palpite-pendente">Você não palpitou</span>`;
+      : `<span class="palpite-status palpite-pendente">Nenhum palpite ainda</span>`;
 
-    // mensagem de resultado/placar
-    let resultadoMessage = "";
+    // mensagens de resultado / pontos
+    let resultadoBadgesHtml = "";
+    let pontosDetalheHtml = "";
+
     if (
       isFinished &&
       userHasPred &&
@@ -292,15 +354,39 @@ async function renderMatchesForCurrentRound() {
       const resPred = diffPred > 0 ? "H" : diffPred < 0 ? "A" : "D";
       const resReal = diffReal > 0 ? "H" : diffReal < 0 ? "A" : "D";
 
+      // badges "Acertei..."
       if (
         userPred.homeGoalsPred === match.homeScore &&
         userPred.awayGoalsPred === match.awayScore
       ) {
-        resultadoMessage = `<div class="resultado-msg exato">🎯 Ganhei 10 Pontos!</div>`;
+        resultadoBadgesHtml = `<div class="resultado-msg exato">🎯 Acertei o placar exato!</div>`;
       } else if (resPred === resReal) {
-        resultadoMessage = `<div class="resultado-msg resultado">✔ Acertei o resultado!</div>`;
-      } else if (userPred.points && userPred.points > 0) {
-        resultadoMessage = `<div class="resultado-msg pontos">Ganhei ${userPred.points} pontos.</div>`;
+        resultadoBadgesHtml = `<div class="resultado-msg resultado">✔ Acertei o resultado!</div>`;
+      }
+
+      // DETALHE DA PONTUAÇÃO (deixa claro por que ganhou os pontos)
+      const detalhe = calcularDetalhePontuacao(
+        match.homeScore,
+        match.awayScore,
+        userPred.homeGoalsPred,
+        userPred.awayGoalsPred,
+        userPred.usedBonus
+      );
+
+      if (detalhe.total > 0) {
+        const partesStr = detalhe.partes.join(" + ");
+        const bonusStr = detalhe.usedBonus ? " (bônus 2x aplicado)" : "";
+        pontosDetalheHtml = `
+          <div class="resultado-msg pontos">
+            Você ganhou <strong>${detalhe.total}</strong> pontos: ${partesStr}${bonusStr}.
+          </div>
+        `;
+      } else {
+        pontosDetalheHtml = `
+          <div class="resultado-msg pontos">
+            Você não marcou pontos neste jogo.
+          </div>
+        `;
       }
     }
 
@@ -319,7 +405,8 @@ async function renderMatchesForCurrentRound() {
           <span class="match-status ${status}">${statusLabel}</span>
           ${resultHtml}
           ${palpiteStatusHtml}
-          ${resultadoMessage}
+          ${resultadoBadgesHtml}
+          ${pontosDetalheHtml}
         </div>
 
         <div class="match-team">
@@ -442,7 +529,7 @@ async function salvarPalpite(matchId, matchRound) {
       homeGoalsPred: homeGoals,
       awayGoalsPred: awayGoals,
       usedBonus,
-      points: 0,
+      points: 0, // será recalculado pelo admin ao finalizar o jogo
       createdAt: new Date(),
     },
     { merge: true }
@@ -494,7 +581,7 @@ function ouvirPalpitesDosOutros(matchId, hasStarted) {
 
   onSnapshot(q, async (snapshot) => {
     if (snapshot.empty) {
-      el.textContent = "Você não palpitou";
+      el.textContent = "Nenhum palpite ainda.";
       return;
     }
 
@@ -540,5 +627,27 @@ function ouvirPalpitesDosOutros(matchId, hasStarted) {
         ${arr.join(" | ")}
       </div>
     `;
+  });
+}
+
+// Modal de regras de pontuação
+const rulesBtn = document.getElementById("rules-btn");
+const rulesModal = document.getElementById("rules-modal");
+const rulesClose = document.getElementById("rules-close");
+
+if (rulesBtn && rulesModal && rulesClose) {
+  rulesBtn.addEventListener("click", () => {
+    rulesModal.style.display = "flex";
+  });
+
+  rulesClose.addEventListener("click", () => {
+    rulesModal.style.display = "none";
+  });
+
+  // fechar clicando fora do card
+  rulesModal.addEventListener("click", (e) => {
+    if (e.target === rulesModal) {
+      rulesModal.style.display = "none";
+    }
   });
 }
