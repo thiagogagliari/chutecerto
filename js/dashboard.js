@@ -417,28 +417,43 @@ async function renderMatchesForCurrentRound() {
 
       <div class="match-bottom">
         <div class="match-column">
-          <h4>Seu palpite</h4>
-          <label>Gols ${match.homeTeam}:</label>
-          <input type="number" min="0" id="home-${matchId}" value="${
-      userPred ? userPred.homeGoalsPred : ""
-    }" ${!podePalpitar ? "disabled" : ""} />
+  <h4>Seu palpite</h4>
 
-          <label>Gols ${match.awayTeam}:</label>
-          <input type="number" min="0" id="away-${matchId}" value="${
-      userPred ? userPred.awayGoalsPred : ""
-    }" ${!podePalpitar ? "disabled" : ""} />
+  <div class="score-row">
+    <span class="score-team">${match.homeTeam}</span>
+    <input
+      type="number"
+      min="0"
+      id="home-${matchId}"
+      value="${userPred ? userPred.homeGoalsPred : ""}"
+      ${!podePalpitar ? "disabled" : ""}
+    />
+    <span class="score-x">x</span>
+    <input
+      type="number"
+      min="0"
+      id="away-${matchId}"
+      value="${userPred ? userPred.awayGoalsPred : ""}"
+      ${!podePalpitar ? "disabled" : ""}
+    />
+    <span class="score-team">${match.awayTeam}</span>
+  </div>
 
-          <label>
-            <input type="checkbox" id="bonus-${matchId}" ${
-      userPred && userPred.usedBonus ? "checked" : ""
-    } ${!podePalpitar ? "disabled" : ""} />
-            Usar bônus 2x nesta partida
-          </label>
+  <label>
+    <input
+      type="checkbox"
+      id="bonus-${matchId}"
+      ${userPred && userPred.usedBonus ? "checked" : ""}
+      ${!podePalpitar ? "disabled" : ""}
+    />
+    Usar bônus 2x nesta partida
+  </label>
 
-          <button id="save-${matchId}" ${!podePalpitar ? "disabled" : ""}>
-            Salvar palpite
-          </button>
-        </div>
+  <button id="save-${matchId}" ${!podePalpitar ? "disabled" : ""}>
+    Salvar palpite
+  </button>
+</div>
+
 
         <div class="match-column">
           <h4>Palpites da galera</h4>

@@ -1,5 +1,15 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@font-face {
+    font-family: "Sofascore Sans Regular";
+    src: url('../fonts/Sofascore.ttf') format('truetype');
+}
 body {
-  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-family: "Sofascore Sans Regular";;
   margin: 0;
   padding: 20px;
   background: #ff3c00;
@@ -201,7 +211,7 @@ input, select, button {
 }
 
 .match-column label {
-  font-size: 0.8rem;
+  font-size: 1.4rem;
 }
 
 .match-column button {
@@ -428,7 +438,6 @@ t {
 .auth-body {
   margin: 0;
   min-height: 100vh;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: radial-gradient(circle at top, #2e3446 0, #050811 55%, #000 100%);
   color: #f5f5f5;
   display: flex;
@@ -600,10 +609,6 @@ button:active {
 }
 
 /* Garantir que inputs e select no resto do app fiquem ok no fundo escuro */
-input,
-select {
-  font-family: inherit;
-}
 
 /* Ajuste responsivo para telas menores */
 @media (max-width: 480px) {
@@ -623,7 +628,6 @@ select {
 .app-body {
   margin: 0;
   min-height: 100vh;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: radial-gradient(circle at top, #2e3446 0, #050811 55%, #000 100%);
   color: #f5f5f5;
 }
@@ -772,7 +776,7 @@ select {
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  background: #ccc;
+  background: transparent;
 }
 
 .user-avatar-placeholder {
@@ -949,7 +953,10 @@ select {
 }
 
 .match-column label {
-  font-size: 0.78rem;
+  text-align: center;
+  color: steelblue;
+  font-style: oblique;
+  font-size: 1.2rem;
 }
 
 .match-column input[type="number"] {
@@ -1526,6 +1533,43 @@ select {
 
 .modal-card p {
   margin: 6px 0;
+}
+
+/* Linha de placar lado a lado no card */
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+}
+
+.score-team {
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.9;
+}
+
+.score-x {
+  font-weight: 600;
+}
+
+.score-row input[type="number"] {
+  width: 44px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid #374151;
+  background: #e54e08;
+  color: #e5e7eb;
+  font-size: 1.3rem;
+}
+
+.score-row input[type="number"]:disabled {
+  opacity: 0.6;
+  background-color: #02162d;
+  text-align: center;
 }
 
 
