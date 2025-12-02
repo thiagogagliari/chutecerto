@@ -246,8 +246,8 @@ function renderRankingGeral() {
         <div>${user.username}</div>
         ${
           user.favoriteTeamName
-            ? `<div class="ranking-team">Time do coração: ${user.favoriteTeamName}</div>`
-            : ""
+          // ? `<div class="ranking-team">Time do coração: ${user.favoriteTeamName}</div>`
+          // : ""
         }
       </div>
       <div class="ranking-points">${user.totalPoints} pts</div>
