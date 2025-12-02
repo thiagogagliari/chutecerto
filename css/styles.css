@@ -1152,7 +1152,7 @@ button:active {
   flex: 1;
   display: flex;
   flex-direction: column;
-  font-size: 0.9rem;
+  font-size: 1.4rem;
 }
 
 .ranking-team {

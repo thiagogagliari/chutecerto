@@ -221,13 +221,13 @@ function renderRankingGeral() {
     let posLabel = pos;
     let medalClass = "";
     if (pos === 1) {
-      posLabel = "🥇";
+      posLabel = "1º";
       medalClass = "medal-gold";
     } else if (pos === 2) {
-      posLabel = "🥈";
+      posLabel = "2º";
       medalClass = "medal-silver";
     } else if (pos === 3) {
-      posLabel = "🥉";
+      posLabel = "3º";
       medalClass = "medal-bronze";
     }
 
@@ -246,8 +246,8 @@ function renderRankingGeral() {
         <div>${user.username}</div>
         ${
           user.favoriteTeamName
-          // ? `<div class="ranking-team">Time do coração: ${user.favoriteTeamName}</div>`
-          // : ""
+            ? `<div class="ranking-team">Time do coração: ${user.favoriteTeamName}</div>`
+            : ""
         }
       </div>
       <div class="ranking-points">${user.totalPoints} pts</div>
@@ -430,8 +430,8 @@ function renderRankingPorRodada() {
         <div>${user.username}</div>
         ${
           user.favoriteTeamName
-            ? `<div class="ranking-team">Time do coração: ${user.favoriteTeamName}</div>`
-            : ""
+          // ? `<div class="ranking-team">Time do coração: ${user.favoriteTeamName}</div>`
+          // : ""
         }
       </div>
       <div class="ranking-points">${ptsRodada} pts</div>
