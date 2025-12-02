@@ -413,11 +413,11 @@ t {
 }
 
 .user-avatar-header {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  object-fit: cover;
-  background: #ccc;
+  object-fit:contain;
+  background: transparent;
 }
 
 .user-avatar-placeholder {
@@ -953,13 +953,17 @@ select {
 }
 
 .match-column input[type="number"] {
-  width: 100%;
-  padding: 4px 6px;
-  border-radius: 6px;
-  border: 1px solid #374151;
-  background: #020617;
-  color: #e5e7eb;
-  margin-bottom: 4px;
+      font-weight: bold;
+    font-size: 30px;
+    height: 60px;
+    text-align: center;
+    width: 100px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    border: 3px solid #374151;
+    background: #ff6a00;
+    color: #ffff;
+    margin-bottom: 4px;
 }
 
 .match-column input[type="number"]:disabled {
