@@ -1715,6 +1715,57 @@ span{
     box-shadow: 0 6px 12px rgba(255, 255, 255, 0.3);
 }
 
+/* ===== Modal "Todos palpites salvos" ===== */
+.modal-saved-all {
+  max-width: 420px;
+  padding: 18px;
+  background: linear-gradient(180deg, #0fbf58 0%, #07a447 100%);
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(7,160,71,0.25);
+  border: 1px solid rgba(255,255,255,0.08);
+  text-align: center;
+}
+
+.modal-saved-all .modal-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+}
+
+.modal-saved-all .modal-body p {
+  margin: 6px 0;
+  opacity: 0.95;
+}
+
+.modal-saved-all .modal-actions {
+  margin-top: 12px;
+  display:flex;
+  justify-content:center;
+}
+
+/* Garantir botão visível no tema */
+.modal-saved-all .btn-primary {
+  background: #ffffff;
+  color: #057a32;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* se seu modal-overlay já existir, essas regras não duplicam; caso contrário: */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.65);
+  z-index: 1500;
+  padding: 16px;
+}
+
+
 
 
 
