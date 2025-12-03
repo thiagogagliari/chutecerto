@@ -30,6 +30,10 @@ a{
   margin-bottom: 20px;
 }
 
+label, input, select, button {
+  text-align: center;
+}
+
 #auth-container,
 #dashboard-container,
 #admin-container {
@@ -204,6 +208,7 @@ input, select, button {
 .match-column h4 {
   margin: 0 0 6px 0;
   font-size: 0.9rem;
+  text-align: center;
 }
 
 .match-column input[type="number"] {
@@ -211,7 +216,10 @@ input, select, button {
 }
 
 .match-column label {
+  display: flex;
+  flex-direction: column;
   font-size: 1.4rem;
+  text-align: center;
 }
 
 .match-column button {
@@ -229,7 +237,7 @@ input, select, button {
 .match-team-logo {
   width: 55px;
   height: 55px;
-  background: #f0f0f0;
+  background: transparent;
   margin-bottom: 4px;
 }
 
@@ -294,6 +302,7 @@ t {
 
 #current-round-label {
   font-weight: bold;
+  text-align: center;
 }
 
 /* Navegação de modo de ranking */
@@ -842,6 +851,7 @@ button:active {
 }
 
 .match-team-logo {
+  background-color: transparent;
   width: 55px;
   height: 55px;
   margin-bottom: 2px;
@@ -954,6 +964,7 @@ button:active {
 .match-column h4 {
   margin: 0 0 4px 0;
   font-size: 0.85rem;
+  text-align: center;
 }
 
 .match-column label {
@@ -982,6 +993,7 @@ button:active {
 }
 
 .match-column button {
+  text-align: center;
   margin-top: 6px;
   width: 100%;
 }
@@ -1544,7 +1556,7 @@ button:active {
 .score-row {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   gap: 6px;
   margin-bottom: 6px;
@@ -1567,7 +1579,7 @@ button:active {
   width: 44px;
   text-align: center;
   border-radius: 6px;
-  border: 1px solid #374151;
+  border: 3px solid #374151;
   background: #e08104;
   color: #e5e7eb;
   font-size: 1.3rem;
@@ -1579,9 +1591,129 @@ button:active {
   text-align: center;
 }
 
+/* ===== Remover setinhas / spinner de input[type="number"] ===== */
 
+/* Chrome, Edge, Safari, Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
+/* Firefox */
+/* input[type="number"] {
+  -moz-appearance: textfield;
+} */
 
+/* opcional: manter aparência consistente (tamanho/altura) */
+input[type="number"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+span{
+  text-align: center;
+}
+
+/* === Toggle Switch Estilo Premium para Bônus === */
+.bonus-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  margin: 10px auto;
+  width: 100%;
+}
+
+/* esconder checkbox padrão */
+.bonus-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* trilho do switch */
+.bonus-switch .slider {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  background: #777;
+  border-radius: 34px;
+  transition: background 0.3s;
+}
+
+/* bolinha */
+.bonus-switch .slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+/* marcado */
+.bonus-switch input:checked + .slider {
+  background: #ff6600; /* laranja Betano */
+}
+
+.bonus-switch input:checked + .slider::before {
+  transform: translateX(22px);
+}
+
+/* texto */
+.bonus-switch .bonus-text {
+  font-size: 1.20rem;
+  color: rgb(214, 105, 3);
+  font-weight: 700;
+  text-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+
+/* desabilitado */
+.bonus-switch input:disabled + .slider {
+  background: #444;
+  opacity: 0.4;
+}
+
+.bonus-switch input:disabled + .slider::before {
+  background: #ccc;
+}
+
+.bonus-switch input:disabled ~ .bonus-text {
+  opacity: 0.5;
+}
+
+/* Card quando o usuário já salvou o palpite */
+/* === Card com palpite salvo - GRADIENT PREMIUM === */
+.match-card.saved-prediction {
+    background: linear-gradient(
+        135deg,
+        #0acb48 0%,     /* verde vivo inicial */
+        #09b23f 40%,    /* verde médio */
+        #068f33 100%    /* verde escuro elegante */
+    );
+    color: #ffffff !important;
+    border: 1px solid #0ed85a;
+    box-shadow: 0 0 12px rgba(6, 200, 80, 0.35);
+    transition: 0.35s ease;
+}
+
+/* Garantir que textos internos fiquem totalmente brancos */
+.match-card.saved-prediction * {
+    color: #ffffff !important;
+}
+
+.match-card.saved-prediction button {
+    background: #ffffff !important;
+    color: #09b23f !important;
+    font-weight: 700;
+    box-shadow: 0 6px 12px rgba(255, 255, 255, 0.3);
+}
 
 
 

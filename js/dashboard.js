@@ -337,7 +337,7 @@ async function renderMatchesForCurrentRound() {
     // status de palpite
     const palpiteStatusHtml = userHasPred
       ? `<span class="palpite-status palpite-ok">✔ Palpite enviado</span>`
-      : `<span class="palpite-status palpite-pendente">Você não palpitou</span>`;
+      : `<span class="palpite-status palpite-pendente">Nenhum palpite ainda</span>`;
 
     // mensagens de resultado / pontos
     let resultadoBadgesHtml = "";
@@ -393,6 +393,9 @@ async function renderMatchesForCurrentRound() {
     const matchEl = document.createElement("div");
     matchEl.className = `match-card ${stateClass}`;
     matchEl.id = `card-${matchId}`;
+    if (userHasPred) {
+      matchEl.classList.add("saved-prediction");
+    }
     matchEl.innerHTML = `
       <div class="match-top">
         <div class="match-team">
@@ -439,15 +442,18 @@ async function renderMatchesForCurrentRound() {
     <span class="score-team">${match.awayTeam}</span>
   </div>
 
-  <label>
-    <input
-      type="checkbox"
-      id="bonus-${matchId}"
-      ${userPred && userPred.usedBonus ? "checked" : ""}
-      ${!podePalpitar ? "disabled" : ""}
-    />
-    Usar bônus 2x nesta partida
-  </label>
+  <label class="bonus-switch">
+  <input
+    type="checkbox"
+    id="bonus-${matchId}"
+    data-round="${match.roundNumber}"
+    data-matchid="${matchId}"
+    ${userPred && userPred.usedBonus ? "checked" : ""}
+    ${!podePalpitar ? "disabled" : ""}
+  />
+  <span class="slider"></span>
+  <span class="bonus-text">Usar BÔNUS🚀 2x nesta partida</span>
+</label>
 
   <button id="save-${matchId}" ${!podePalpitar ? "disabled" : ""}>
     Salvar palpite
@@ -465,6 +471,18 @@ async function renderMatchesForCurrentRound() {
     `;
 
     matchesListEl.appendChild(matchEl);
+
+    // listener para o checkbox de bônus no card recém-criado
+    const bonusCheckbox = document.getElementById(`bonus-${matchId}`);
+    if (bonusCheckbox) {
+      bonusCheckbox.addEventListener("change", async (e) => {
+        const checked = e.target.checked;
+        const roundAttr = e.target.getAttribute("data-round");
+        const matchRound = Number(roundAttr) || match.roundNumber || 0;
+        // se o usuário marcou, tentamos aplicar o bônus; se desmarcou, removemos
+        await handleBonusToggle(matchId, matchRound, checked);
+      });
+    }
 
     // evento salvar palpite
     document
@@ -488,6 +506,22 @@ async function salvarPalpite(matchId, matchRound) {
   const homeInput = document.getElementById(`home-${matchId}`);
   const awayInput = document.getElementById(`away-${matchId}`);
   const bonusInput = document.getElementById(`bonus-${matchId}`);
+
+  // === VALIDAR CAMPOS OBRIGATÓRIOS ===
+  if (homeInput.value === "" || awayInput.value === "") {
+    alert("Preencha os gols de ambos os times antes de salvar o palpite!");
+    return;
+  }
+
+  // transformar em número
+  const homeGoalsPred = Number(homeInput.value);
+  const awayGoalsPred = Number(awayInput.value);
+
+  // validar se são números válidos
+  if (isNaN(homeGoalsPred) || isNaN(awayGoalsPred)) {
+    alert("Digite valores numéricos válidos para os gols.");
+    return;
+  }
 
   const homeGoals = Number(homeInput.value);
   const awayGoals = Number(awayInput.value);
@@ -550,6 +584,12 @@ async function salvarPalpite(matchId, matchRound) {
     { merge: true }
   );
 
+  // marcar visualmente que foi salvo
+  const card = document.getElementById(`card-${matchId}`);
+  if (card) {
+    card.classList.add("saved-prediction");
+  }
+
   // atualizar bonusUsage do usuário
   if (usedBonus) {
     const bonusUsage = currentUserProfile.bonusUsage || {};
@@ -576,6 +616,92 @@ async function salvarPalpite(matchId, matchRound) {
   }
 }
 
+// ===== Gerenciar toggle do bônus: garante 1 por rodada =====
+async function handleBonusToggle(matchId, matchRound, checked) {
+  // requisito: usuário logado e profile carregado
+  if (!currentUser || !currentUserProfile) {
+    alert("Usuário não identificado.");
+    // volta checkbox para estado anterior no DOM
+    const cb = document.getElementById(`bonus-${matchId}`);
+    if (cb) cb.checked = !checked;
+    return;
+  }
+
+  // checar se existe palpite salvo para esse usuário neste jogo
+  const predId = `${currentUser.uid}_${matchId}`;
+  const predRef = doc(db, "predictions", predId);
+  const predSnap = await getDoc(predRef);
+
+  if (!predSnap.exists()) {
+    alert(
+      "Você só pode usar o BÔNUS em uma partida, salve seu palpite primeiro."
+    );
+    const cb = document.getElementById(`bonus-${matchId}`);
+    if (cb) cb.checked = false;
+    return;
+  }
+
+  // ler bonusUsage atual do usuário (a cópia local currentUserProfile)
+  const bonusUsage = currentUserProfile.bonusUsage || {};
+  const previousMatchId = bonusUsage[matchRound];
+
+  // se o usuário marcou (checked === true) -> precisamos:
+  // 1) desmarcar o bônus anterior (se houver e for diferente)
+  // 2) marcar o atual no prediction e atualizar users.bonusUsage
+  if (checked) {
+    // 1) desmarcar anterior (no Firestore e no DOM) se existir e for diferente
+    if (previousMatchId && previousMatchId !== matchId) {
+      const prevPredRef = doc(
+        db,
+        "predictions",
+        `${currentUser.uid}_${previousMatchId}`
+      );
+      const prevPredSnap = await getDoc(prevPredRef);
+      if (prevPredSnap.exists()) {
+        await setDoc(prevPredRef, { usedBonus: false }, { merge: true });
+      }
+      // desmarcar no DOM (se renderizado)
+      const prevCb = document.getElementById(`bonus-${previousMatchId}`);
+      if (prevCb) prevCb.checked = false;
+    }
+
+    // 2) marcar atual no prediction
+    await setDoc(predRef, { usedBonus: true }, { merge: true });
+
+    // 3) atualizar campo bonusUsage do usuário (no Firestore e local)
+    const newBonusUsage = { ...(currentUserProfile.bonusUsage || {}) };
+    newBonusUsage[matchRound] = matchId;
+    await setDoc(
+      doc(db, "users", currentUser.uid),
+      { bonusUsage: newBonusUsage },
+      { merge: true }
+    );
+    currentUserProfile.bonusUsage = newBonusUsage;
+
+    // 4) desmarcar outras checkboxes de mesmo round no DOM (por segurança)
+    document
+      .querySelectorAll(`input[type="checkbox"][data-round="${matchRound}"]`)
+      .forEach((el) => {
+        if (el.id !== `bonus-${matchId}`) el.checked = false;
+      });
+  } else {
+    // usuário desmarcou -> remover uso do bônus
+    await setDoc(predRef, { usedBonus: false }, { merge: true });
+
+    // remover da estrutura bonusUsage
+    const newBonusUsage = { ...(currentUserProfile.bonusUsage || {}) };
+    if (newBonusUsage && newBonusUsage[matchRound]) {
+      delete newBonusUsage[matchRound];
+      await setDoc(
+        doc(db, "users", currentUser.uid),
+        { bonusUsage: newBonusUsage },
+        { merge: true }
+      );
+      currentUserProfile.bonusUsage = newBonusUsage;
+    }
+  }
+}
+
 // Estatísticas + lista de palpites da galera
 // AGORA: só mostra depois que o jogo começar (hasStarted === true)
 function ouvirPalpitesDosOutros(matchId, hasStarted) {
@@ -596,7 +722,7 @@ function ouvirPalpitesDosOutros(matchId, hasStarted) {
 
   onSnapshot(q, async (snapshot) => {
     if (snapshot.empty) {
-      el.textContent = "Você não palpitou ainda.";
+      el.textContent = "Nenhum palpite ainda.";
       return;
     }
 
@@ -666,3 +792,34 @@ if (rulesBtn && rulesModal && rulesClose) {
     }
   });
 }
+
+// ===== Bloquear scroll do mouse que altera value de input[type=number] quando focado =====
+function preventWheelOnNumberInput(e) {
+  if (e.target.matches && e.target.matches('input[type="number"]')) {
+    e.preventDefault();
+  }
+}
+
+document.addEventListener("focusin", (e) => {
+  if (
+    e.target &&
+    e.target.matches &&
+    e.target.matches('input[type="number"]')
+  ) {
+    // adiciona listener que previne o wheel enquanto o input estiver focado
+    e.target.addEventListener("wheel", preventWheelOnNumberInput, {
+      passive: false,
+    });
+  }
+});
+
+document.addEventListener("focusout", (e) => {
+  if (
+    e.target &&
+    e.target.matches &&
+    e.target.matches('input[type="number"]')
+  ) {
+    // remove listener
+    e.target.removeEventListener("wheel", preventWheelOnNumberInput);
+  }
+});
