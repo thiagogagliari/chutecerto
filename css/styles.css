@@ -139,7 +139,7 @@ input, select, button {
 /* Topo do card: times e informações */
 .match-top {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
@@ -196,7 +196,7 @@ input, select, button {
 /* Parte de baixo: duas colunas (seu palpite x palpite da galera) */
 .match-bottom {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
   margin-top: 10px;
 }
@@ -227,8 +227,8 @@ input, select, button {
 }
 
 .match-team-logo {
-  width: 40px;
-  height: 40px;
+  width: 55px;
+  height: 55px;
   background: #f0f0f0;
   margin-bottom: 4px;
 }
@@ -827,7 +827,7 @@ button:active {
 /* Topo do card */
 .match-top {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
   gap: 6px;
 }
@@ -946,7 +946,7 @@ button:active {
 /* Parte de baixo do card (2 colunas) */
 .match-bottom {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
   margin-top: 6px;
 }
@@ -1543,6 +1543,8 @@ button:active {
 /* Linha de placar lado a lado no card */
 .score-row {
   display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
   gap: 6px;
   margin-bottom: 6px;

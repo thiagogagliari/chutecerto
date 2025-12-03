@@ -416,7 +416,7 @@ async function resetarPontuacaoDoJogo(matchId) {
     const predRef = doc(db, "predictions", predId);
     await updateDoc(predRef, { points: 0 });
 
-    // desconta do totalPoints do usuário
+    // desconta do totalPoints do u suário
     const userRef = doc(db, "users", pred.userId);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {

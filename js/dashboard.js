@@ -337,7 +337,7 @@ async function renderMatchesForCurrentRound() {
     // status de palpite
     const palpiteStatusHtml = userHasPred
       ? `<span class="palpite-status palpite-ok">✔ Palpite enviado</span>`
-      : `<span class="palpite-status palpite-pendente">Nenhum palpite ainda</span>`;
+      : `<span class="palpite-status palpite-pendente">Você não palpitou</span>`;
 
     // mensagens de resultado / pontos
     let resultadoBadgesHtml = "";
@@ -596,7 +596,7 @@ function ouvirPalpitesDosOutros(matchId, hasStarted) {
 
   onSnapshot(q, async (snapshot) => {
     if (snapshot.empty) {
-      el.textContent = "Nenhum palpite ainda.";
+      el.textContent = "Você não palpitou ainda.";
       return;
     }
 
