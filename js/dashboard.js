@@ -161,13 +161,13 @@ async function carregarJogos() {
   if (!matchesListEl) return;
   matchesListEl.innerHTML = "Carregando...";
 
-    const snapshot = await getDocs(
-      query(
-        collection(db, "matches"),
-        orderBy("round", "asc"),
-        orderBy("kickoff", "asc")
-      )
-    );
+  const snapshot = await getDocs(
+    query(
+      collection(db, "matches"),
+      orderBy("round", "asc"),
+      orderBy("kickoff", "asc")
+    )
+  );
 
   allMatches = [];
   const roundToMatches = new Map();
@@ -299,7 +299,7 @@ async function renderMatchesForCurrentRound() {
 
     // palpite da galera (placeholder; será preenchido por ouvirPalpitesDosOutros)
     const palpiteStatusHtml = userHasPred
-      ? `<span class="palpite-status palpite-ok">✔ Palpite enviado</span>`
+      ? `<span class="palpite-status palpite-ok">✔ Palpite Salvo!</span>`
       : `<span class="palpite-status palpite-pendente">Nenhum palpite ainda</span>`;
 
     // badges de resultado/pontos (se finalizado)
@@ -538,11 +538,62 @@ async function salvarPalpite(matchId, matchRound) {
     }
 
     // feedback visual
+    // após await setDoc(...) e após adicionar card.classList.add("saved-prediction")
+    // ----------------------------------------------------
+    // === Após salvar no Firestore (substitua o bloco visual antigo por este) ===
     const card = document.getElementById(`card-${matchId}`);
-    if (card) card.classList.add("saved-prediction");
+    if (card) {
+      // 1) classe visual do palpite salvo (gradient verde)
+      card.classList.add("saved-prediction");
+
+      // 2) atualizar status textual imediatamente
+      const statusEl = card.querySelector(".palpite-status");
+      if (statusEl) {
+        statusEl.textContent = "✔ Palpite Salvo!";
+        statusEl.classList.remove("palpite-pendente");  
+        statusEl.classList.add("palpite-ok");
+      }
+
+      // 3) atualizar inputs (confirma visualmente os valores)
+      const homeInputEl = card.querySelector(`#home-${matchId}`);
+      const awayInputEl = card.querySelector(`#away-${matchId}`);
+      if (homeInputEl) homeInputEl.value = String(homeGoals);
+      if (awayInputEl) awayInputEl.value = String(awayGoals);
+
+      // 4) atualizar checkbox de bônus no DOM
+      const bonusEl = card.querySelector(`#bonus-${matchId}`);
+      if (bonusEl) bonusEl.checked = !!usedBonus;
+
+      // 5) animar: adiciona classe e badge com ✓
+      // evita duplicar badge se já existir
+      if (!card.classList.contains("animate-saved")) {
+        // criar badge (um pequeno círculo com ✓)
+        const badge = document.createElement("div");
+        badge.className = "save-badge";
+        badge.innerText = "✔";
+        card.appendChild(badge);
+
+        // disparar animação
+        // pequena folga para garantir render
+        requestAnimationFrame(() => {
+          card.classList.add("animate-saved");
+        });
+
+        // remover animação + badge após 900ms
+        setTimeout(() => {
+          card.classList.remove("animate-saved");
+          // limpar badge depois da transição
+          setTimeout(() => {
+            if (badge && badge.parentNode) badge.parentNode.removeChild(badge);
+          }, 300);
+        }, 900);
+      }
+    }
+
+    // ----------------------------------------------------
 
     // sucesso
-    alert("Palpite salvo!");
+    // alert("Palpite salvo!");
 
     // depois de salvar, checar se salvou TODOS os palpites da rodada
     try {

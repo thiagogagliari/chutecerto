@@ -1700,7 +1700,7 @@ span{
     color: #ffffff !important;
     border: 1px solid #0ed85a;
     box-shadow: 0 0 12px rgba(6, 200, 80, 0.35);
-    transition: 0.35s ease;
+    transition: 10.35s all ease-in-out;
 }
 
 /* Garantir que textos internos fiquem totalmente brancos */
@@ -1764,6 +1764,69 @@ span{
   z-index: 1500;
   padding: 16px;
 }
+
+/* ==== Micro animação ao salvar palpite ==== */
+
+/* animação do card (pulse + glow) */
+.match-card.animate-saved {
+  animation: savedCardPulse 0.9s ease-out;
+  box-shadow: 0 8px 28px rgba(6,200,80,0.18);
+  position: relative; /* necessário para o badge */
+}
+
+@keyframes savedCardPulse {
+  0%   { transform: scale(1); filter: drop-shadow(0 0 0 rgba(6,200,80,0)); }
+  40%  { transform: scale(1.02); filter: drop-shadow(0 8px 20px rgba(6,200,80,0.22)); }
+  70%  { transform: scale(1.01); filter: drop-shadow(0 6px 16px rgba(6,200,80,0.16)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(6,200,80,0)); }
+}
+
+/* badge check flutuante (aparece no canto superior direito do card) */
+.match-card .save-badge {
+  pointer-events: none;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));
+  color: #057a32; /* verde para o ✓ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  transform: translateY(-6px) scale(0.6);
+  opacity: 0;
+  box-shadow: 0 6px 18px rgba(5,122,50,0.14);
+  transition: transform 260ms cubic-bezier(.2,.9,.3,1), opacity 260ms ease;
+}
+
+/* quando ativado */
+.match-card.animate-saved .save-badge {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* pequeno brilho por trás do badge (efeito radial) */
+.match-card .save-badge::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(6,200,80,0.18), rgba(6,200,80,0.04) 40%, transparent 60%);
+  z-index: -1;
+  opacity: 0.95;
+  transition: opacity 260ms ease;
+}
+
+/* acessibilidade: reduz animação se user prefere menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .match-card.animate-saved { animation: none !important; }
+  .match-card .save-badge { transition: none !important; transform: none !important; opacity: 1 !important; }
+}
+
 
 
 
