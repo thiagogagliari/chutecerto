@@ -300,7 +300,7 @@ async function renderMatchesForCurrentRound() {
     // palpite da galera (placeholder; será preenchido por ouvirPalpitesDosOutros)
     const palpiteStatusHtml = userHasPred
       ? `<span class="palpite-status palpite-ok">✔ Palpite Salvo!</span>`
-      : `<span class="palpite-status palpite-pendente">Nenhum palpite ainda</span>`;
+      : `<span class="palpite-status palpite-pendente">Nenhum palpite salvo</span>`;
 
     // badges de resultado/pontos (se finalizado)
     let resultadoBadgesHtml = "";
@@ -550,7 +550,7 @@ async function salvarPalpite(matchId, matchRound) {
       const statusEl = card.querySelector(".palpite-status");
       if (statusEl) {
         statusEl.textContent = "✔ Palpite Salvo!";
-        statusEl.classList.remove("palpite-pendente");  
+        statusEl.classList.remove("palpite-pendente");
         statusEl.classList.add("palpite-ok");
       }
 
@@ -701,7 +701,7 @@ function ouvirPalpitesDosOutros(matchId, hasStarted) {
   );
   onSnapshot(q, async (snapshot) => {
     if (snapshot.empty) {
-      el.textContent = "Nenhum palpite ainda.";
+      el.textContent = "Nenhum palpite salvo.";
       return;
     }
 
