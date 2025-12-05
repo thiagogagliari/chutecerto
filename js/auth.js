@@ -2,7 +2,7 @@
 import { auth, db, storage } from "./firebase-config.js";
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword, 
+  signInWithEmailAndPassword,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import {
@@ -188,6 +188,20 @@ const TEAMS = {
   // adicione outros times aqui
 };
 
+// Validação simples de PIX: aceita email, telefone (apenas dígitos), CPF (11 dígitos) ou chave aleatória (>=8)
+function isValidPixKey(k) {
+  if (!k) return false;
+  const v = k.trim();
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const digitsOnly = /^\d+$/;
+  const cpfOnly = /^\d{11}$/;
+  if (emailRe.test(v)) return true;
+  if (cpfOnly.test(v)) return true;
+  if (digitsOnly.test(v) && v.length >= 8 && v.length <= 15) return true;
+  if (v.length >= 8) return true; // chave aleatória
+  return false;
+}
+
 // CADASTRO
 if (signupBtn) {
   signupBtn.addEventListener("click", async () => {
@@ -195,6 +209,9 @@ if (signupBtn) {
     const email = document.getElementById("signup-email").value.trim();
     const password = document.getElementById("signup-password").value;
     const favoriteTeamId = document.getElementById("favorite-team").value;
+    // novo input PIX no form de cadastro (opcional)
+    const pixKeyInput = document.getElementById("signup-pix");
+    const pixKey = pixKeyInput ? pixKeyInput.value.trim() : "";
 
     if (!username || !email || !password) {
       alert("Preencha username, email e senha.");
@@ -212,10 +229,21 @@ if (signupBtn) {
       return;
     }
 
+    // validar pixKey se preenchido
+    if (pixKey && !isValidPixKey(pixKey)) {
+      alert(
+        "Chave PIX inválida. Informe email, CPF, telefone ou chave aleatória válida."
+      );
+      return;
+    }
+
     try {
-      // verifica se username já existe
-      // (mantém a sua lógica anterior de Firestore se tiver)
-      // ...
+      // verifica se username já existe (opcional)
+      // você pode manter sua lógica de verificação com query se quiser.
+      // Exemplo (descomentado) para impedir usernames duplicados:
+      // const q = query(collection(db, "users"), where("username", "==", username));
+      // const snaps = await getDocs(q);
+      // if (!snaps.empty) { alert("Username já em uso."); return; }
 
       const userCred = await createUserWithEmailAndPassword(
         auth,
@@ -235,6 +263,7 @@ if (signupBtn) {
         createdAt: new Date(),
         totalPoints: 0,
         bonusUsage: {},
+        pixKey: pixKey || "",
       });
 
       alert("Cadastro realizado com sucesso!");

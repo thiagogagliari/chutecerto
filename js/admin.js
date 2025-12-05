@@ -20,6 +20,9 @@ import {
 const logoutBtn = document.getElementById("logout-btn");
 const matchesListEl = document.getElementById("matches-list");
 
+// container para usuários no admin (adicione em admin.html)
+const adminUsersListEl = document.getElementById("admin-users-list");
+
 // form de criação
 const createMatchForm = document.getElementById("create-match-form");
 const roundInput = document.getElementById("round");
@@ -34,10 +37,12 @@ let currentUser = null;
 let currentUserProfile = null;
 
 // ==== LOGOUT ====
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-  window.location.href = "index.html";
-});
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    window.location.href = "index.html";
+  });
+}
 
 // ==== AUTENTICAÇÃO E VERIFICAÇÃO DE ADMIN ====
 onAuthStateChanged(auth, async (user) => {
@@ -67,10 +72,18 @@ onAuthStateChanged(auth, async (user) => {
 
   // admin autenticado
   carregarJogosAdmin();
+
+  // carregar lista de usuários (se container estiver presente)
+  if (adminUsersListEl) {
+    carregarUsuariosAdmin().catch((err) =>
+      console.error("Erro ao carregar usuários:", err)
+    );
+  }
 });
 
 // ==== FUNÇÃO PARA CARREGAR JOGOS NO ADMIN ====
 async function carregarJogosAdmin() {
+  if (!matchesListEl) return;
   matchesListEl.innerHTML = "Carregando jogos cadastrados...";
 
   const snapshot = await getDocs(collection(db, "matches"));
@@ -166,12 +179,12 @@ async function carregarJogosAdmin() {
       </div>
       <div class="admin-kickoff">${kickoffStr}</div>
       <div class="admin-actions">
-        <button type="button" class="btn-secondary" id="save-${match.id}">
-          💾 Salvar
-        </button>
-        <button type="button" class="btn-secondary" id="delete-${match.id}">
-          🗑 Apagar
-        </button>
+        <button type="button" class="btn-secondary" id="save-${
+          match.id
+        }">💾 Salvar</button>
+        <button type="button" class="btn-secondary" id="delete-${
+          match.id
+        }">🗑 Apagar</button>
       </div>
     `;
 
@@ -189,54 +202,56 @@ async function carregarJogosAdmin() {
 }
 
 // ==== CADASTRAR NOVO JOGO ====
-createMatchBtn.addEventListener("click", async () => {
-  const round = Number(roundInput.value);
-  const homeTeam = homeTeamInput.value.trim();
-  const awayTeam = awayTeamInput.value.trim();
-  const kickoff = kickoffInput.value;
-  const homeLogoUrl = homeLogoInput.value.trim();
-  const awayLogoUrl = awayLogoInput.value.trim();
+if (createMatchBtn) {
+  createMatchBtn.addEventListener("click", async () => {
+    const round = Number(roundInput.value);
+    const homeTeam = homeTeamInput.value.trim();
+    const awayTeam = awayTeamInput.value.trim();
+    const kickoff = kickoffInput.value;
+    const homeLogoUrl = homeLogoInput.value.trim();
+    const awayLogoUrl = awayLogoInput.value.trim();
 
-  if (!round || !homeTeam || !awayTeam || !kickoff) {
-    alert("Preencha rodada, times e data/hora.");
-    return;
-  }
+    if (!round || !homeTeam || !awayTeam || !kickoff) {
+      alert("Preencha rodada, times e data/hora.");
+      return;
+    }
 
-  const kickoffDate = new Date(kickoff);
-  if (isNaN(kickoffDate.getTime())) {
-    alert("Data/hora inválida.");
-    return;
-  }
+    const kickoffDate = new Date(kickoff);
+    if (isNaN(kickoffDate.getTime())) {
+      alert("Data/hora inválida.");
+      return;
+    }
 
-  try {
-    await addDoc(collection(db, "matches"), {
-      round,
-      homeTeam,
-      awayTeam,
-      kickoff: kickoffDate,
-      homeLogoUrl: homeLogoUrl || "",
-      awayLogoUrl: awayLogoUrl || "",
-      status: "scheduled",
-      homeScore: null,
-      awayScore: null,
-    });
+    try {
+      await addDoc(collection(db, "matches"), {
+        round,
+        homeTeam,
+        awayTeam,
+        kickoff: kickoffDate,
+        homeLogoUrl: homeLogoUrl || "",
+        awayLogoUrl: awayLogoUrl || "",
+        status: "scheduled",
+        homeScore: null,
+        awayScore: null,
+      });
 
-    alert("Jogo cadastrado com sucesso!");
+      alert("Jogo cadastrado com sucesso!");
 
-    // limpar form
-    roundInput.value = "";
-    homeTeamInput.value = "";
-    awayTeamInput.value = "";
-    kickoffInput.value = "";
-    homeLogoInput.value = "";
-    awayLogoInput.value = "";
+      // limpar form
+      roundInput.value = "";
+      homeTeamInput.value = "";
+      awayTeamInput.value = "";
+      kickoffInput.value = "";
+      homeLogoInput.value = "";
+      awayLogoInput.value = "";
 
-    carregarJogosAdmin();
-  } catch (err) {
-    console.error(err);
-    alert("Erro ao cadastrar jogo: " + err.message);
-  }
-});
+      carregarJogosAdmin();
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao cadastrar jogo: " + err.message);
+    }
+  });
+}
 
 // ==== SALVAR JOGO (status e placar) ====
 async function salvarJogo(matchId) {
@@ -362,8 +377,6 @@ async function recalcularPontuacaoDoJogo(matchId, homeScore, awayScore) {
 
   const snapshot = await getDocs(q);
 
-  const batchOps = [];
-
   for (const docSnap of snapshot.docs) {
     const pred = docSnap.data();
     const predId = docSnap.id;
@@ -417,13 +430,162 @@ async function resetarPontuacaoDoJogo(matchId) {
     await updateDoc(predRef, { points: 0 });
 
     // desconta do totalPoints do usuário
+    // ajustar totalPoints do usuário
     const userRef = doc(db, "users", pred.userId);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
       const userData = userSnap.data();
       const currentTotal = userData.totalPoints || 0;
-      const newTotal = currentTotal - oldPoints;
+      const newTotal = currentTotal - oldPoints + newPoints;
       await updateDoc(userRef, { totalPoints: newTotal });
     }
   }
+}
+/* ============================
+   NOVA PARTE: LISTAGEM DE USUÁRIOS (ADMIN)
+   - mostra usuários com PIX mascarado
+   - botão "Mostrar" recarrega do Firestore e permite copiar
+   ============================ */
+
+// máscara simples para exibir PIX parcialmente
+function maskPix(pix) {
+  if (!pix) return "—";
+  const s = String(pix);
+  if (s.length <= 6) {
+    // ex: 123456 => **3456
+    return s.replace(/.(?=.{2})/g, "*");
+  }
+  const prefix = s.slice(0, 3);
+  const suffix = s.slice(-3);
+  return `${prefix}...${suffix}`;
+}
+
+// carrega e renderiza usuários no admin
+async function carregarUsuariosAdmin() {
+  if (!adminUsersListEl) return;
+
+  adminUsersListEl.innerHTML = "Carregando usuários...";
+
+  const snaps = await getDocs(collection(db, "users"));
+  const rows = [];
+
+  snaps.forEach((uSnap) => {
+    const u = uSnap.data();
+    const uid = uSnap.id;
+    rows.push({ uid, ...u });
+  });
+
+  // ordenar por username (opcional)
+  rows.sort((a, b) => {
+    const A = (a.username || a.displayName || a.uid || "").toLowerCase();
+    const B = (b.username || b.displayName || b.uid || "").toLowerCase();
+    return A.localeCompare(B);
+  });
+
+  // construir lista
+  adminUsersListEl.innerHTML = "";
+  if (!rows.length) {
+    adminUsersListEl.innerHTML = "<div>Nenhum usuário cadastrado.</div>";
+    return;
+  }
+
+  rows.forEach((u) => {
+    const row = document.createElement("div");
+    row.className = "admin-user-row";
+    row.style.display = "flex";
+    row.style.justifyContent = "space-between";
+    row.style.alignItems = "center";
+    row.style.padding = "8px 6px";
+    row.style.borderBottom = "1px solid rgba(255,255,255,0.04)";
+
+    const left = document.createElement("div");
+    left.innerHTML = `
+      <div style="font-weight:600;">${
+        u.username || u.displayName || u.uid
+      }</div>
+      <div style="font-size:0.9rem; opacity:0.85;">${u.email || ""}</div>
+      <div style="font-size:0.85rem; opacity:0.8;">Time: ${
+        u.favoriteTeamName || "-"
+      }</div>
+    `;
+
+    const right = document.createElement("div");
+    right.style.display = "flex";
+    right.style.alignItems = "center";
+    right.style.gap = "8px";
+
+    const pixSpan = document.createElement("span");
+    pixSpan.id = `pix-mask-${u.uid}`;
+    pixSpan.textContent = maskPix(u.pixKey || "");
+    pixSpan.style.fontFamily = "monospace";
+    pixSpan.style.marginRight = "6px";
+
+    const showBtn = document.createElement("button");
+    showBtn.className = "btn-sm";
+    showBtn.textContent = "Mostrar";
+
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "btn-sm";
+    copyBtn.textContent = "Copiar";
+
+    // montar
+    right.appendChild(pixSpan);
+    right.appendChild(showBtn);
+    right.appendChild(copyBtn);
+    row.appendChild(left);
+    row.appendChild(right);
+    adminUsersListEl.appendChild(row);
+
+    // evento "Mostrar": recarrega do Firestore e exibe em prompt/confirm para copiar
+    showBtn.addEventListener("click", async () => {
+      try {
+        const snap = await getDoc(doc(db, "users", u.uid));
+        const full = snap.exists() ? snap.data().pixKey || "" : "";
+        if (!full) {
+          alert("Usuário não cadastrou chave PIX.");
+          return;
+        }
+        // opcional: atualizar a span com valor completo (mas cuidado com exposição)
+        const wantReveal = confirm(
+          `Chave PIX do usuário ${
+            u.username || u.uid
+          }:\n\n${full}\n\nClique OK para copiar para a área de transferência, Cancel para manter mascarado.`
+        );
+        if (wantReveal) {
+          try {
+            await navigator.clipboard.writeText(full);
+            alert("Chave copiada para área de transferência.");
+            // atualizar a máscara para mostrar (opcional)
+            pixSpan.textContent = full;
+          } catch {
+            window.prompt("Copie a chave PIX abaixo:", full);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao buscar chave PIX:", err);
+        alert("Erro ao obter chave PIX.");
+      }
+    });
+
+    // evento "Copiar": copia a chave atual (recarrega do Firestore para garantir valor)
+    copyBtn.addEventListener("click", async () => {
+      try {
+        const snap = await getDoc(doc(db, "users", u.uid));
+        const full = snap.exists() ? snap.data().pixKey || "" : "";
+        if (!full) {
+          alert("Usuário não cadastrou chave PIX.");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(full);
+          alert("Chave PIX copiada!");
+        } catch {
+          window.prompt("Copie a chave PIX abaixo:", full);
+        }
+      } catch (err) {
+        console.error("Erro ao copiar PIX:", err);
+        alert("Erro ao copiar chave PIX.");
+      }
+    });
+  });
 }
