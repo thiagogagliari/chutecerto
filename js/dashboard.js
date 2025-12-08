@@ -298,13 +298,15 @@ async function renderMatchesForCurrentRound() {
         : "";
 
     // palpite da galera (placeholder; será preenchido por ouvirPalpitesDosOutros)
-    const palpiteStatusHtml = userHasPred
-      ? `<span class="palpite-status palpite-ok">✔ Palpite Salvo!</span>`
-      : `<span class="palpite-status palpite-pendente">Nenhum palpite salvo</span>`;
+    // status do palpite (não exibe nada se o jogo já estiver finalizado)
+    const palpiteStatusHtml = !isFinished
+      ? userHasPred
+        ? `<span class="palpite-status palpite-ok">✔ Palpite Salvo!</span>`
+        : `<span class="palpite-status palpite-pendente">Nenhum palpite salvo</span>`
+      : "";
 
-    // badges de resultado/pontos (se finalizado)
-    let resultadoBadgesHtml = "";
-    let pontosDetalheHtml = "";
+    // ===== NOVA LÓGICA COMPACTA DE PONTOS =====
+    let pontosCompactHtml = "";
 
     if (
       isFinished &&
@@ -312,22 +314,6 @@ async function renderMatchesForCurrentRound() {
       match.homeScore != null &&
       match.awayScore != null
     ) {
-      // badges: placar exato / resultado certo
-      const diffPred = userPred.homeGoalsPred - userPred.awayGoalsPred;
-      const diffReal = match.homeScore - match.awayScore;
-      const resPred = diffPred > 0 ? "H" : diffPred < 0 ? "A" : "D";
-      const resReal = diffReal > 0 ? "H" : diffReal < 0 ? "A" : "D";
-
-      if (
-        userPred.homeGoalsPred === match.homeScore &&
-        userPred.awayGoalsPred === match.awayScore
-      ) {
-        resultadoBadgesHtml = `<div class="resultado-msg exato">🎯 Acertei o placar exato!</div>`;
-      } else if (resPred === resReal) {
-        resultadoBadgesHtml = `<div class="resultado-msg resultado">✔ Acertei o resultado!</div>`;
-      }
-
-      // detalhe de pontuação (para transparência)
       const detalhe = calcularDetalhePontuacao(
         match.homeScore,
         match.awayScore,
@@ -335,14 +321,64 @@ async function renderMatchesForCurrentRound() {
         userPred.awayGoalsPred,
         userPred.usedBonus
       );
-      if (detalhe.total > 0) {
-        const partesStr = detalhe.partes.join(" + ");
-        const bonusStr = detalhe.usedBonus ? " (bônus 2x aplicado)" : "";
-        pontosDetalheHtml = `<div class="resultado-msg pontos">Você ganhou <strong>${detalhe.total}</strong> pontos: ${partesStr}${bonusStr}.</div>`;
-      } else {
-        pontosDetalheHtml = `<div class="resultado-msg pontos">Você não marcou pontos neste jogo.</div>`;
+
+      const pontos = detalhe.total || 0;
+
+      // descrição dos critérios (para o "Detalhes")
+      const criterios = [];
+      const realHome = match.homeScore;
+      const realAway = match.awayScore;
+      const predHome = userPred.homeGoalsPred;
+      const predAway = userPred.awayGoalsPred;
+
+      const diffReal = realHome - realAway;
+      const diffPred = predHome - predAway;
+      const resReal = diffReal > 0 ? "H" : diffReal < 0 ? "A" : "D";
+      const resPred = diffPred > 0 ? "H" : diffPred < 0 ? "A" : "D";
+
+      if (realHome === predHome && realAway === predAway) {
+        criterios.push("🎯 Placar exato");
+      } else if (resReal === resPred) {
+        criterios.push("✔ Resultado (vitória/empate) correto");
       }
+
+      if (realHome === predHome) {
+        criterios.push(`Gols do ${match.homeTeam} corretos`);
+      }
+      if (realAway === predAway) {
+        criterios.push(`Gols do ${match.awayTeam} corretos`);
+      }
+      if (diffReal === diffPred) {
+        criterios.push("Diferença de gols correta");
+      }
+      if (userPred.usedBonus) {
+        criterios.push("Bônus 2x aplicado");
+      }
+
+      if (!criterios.length && pontos === 0) {
+        criterios.push("Nenhum critério de pontuação acertado.");
+      }
+
+      const criteriosHtml = criterios.map((c) => `• ${c}`).join("<br>");
+
+      pontosCompactHtml = `
+        <div class="pontos-wrapper">
+          <span class="pontos-badge">
+            ${pontos} ponto${pontos === 1 ? "" : "s"}
+          </span>
+          <button type="button"
+                  class="pontos-toggle"
+                  data-target="pontos-det-${matchId}"
+                  aria-expanded="false">
+            Detalhes ⌄
+          </button>
+        </div>
+        <div class="pontos-detalhes" id="pontos-det-${matchId}" style="display:none;">
+          ${criteriosHtml}
+        </div>
+      `;
     }
+    // ===== FIM BLOCO NOVO =====
 
     // construir card
     const matchEl = document.createElement("div");
@@ -354,7 +390,8 @@ async function renderMatchesForCurrentRound() {
         : "state-live"
     }`;
     matchEl.id = `card-${matchId}`;
-    matchEl.innerHTML = `
+    matchEl.innerHTML =
+      `
       <div class="match-top">
         <div class="match-team">
           ${homeLogoHtml}
@@ -362,12 +399,15 @@ async function renderMatchesForCurrentRound() {
         </div>
 
         <div class="match-vs">
-          <div class="match-time">${kickoffDate.toLocaleString()}</div>
+          ${
+            !isFinished
+              ? `<div class="match-time">${kickoffDate.toLocaleString()}</div>`
+              : ""
+          }
           <span class="match-status ${status}">${statusLabel}</span>
           ${resultHtml}
           ${palpiteStatusHtml}
-          ${resultadoBadgesHtml}
-          ${pontosDetalheHtml}
+          ${pontosCompactHtml}
         </div>
 
         <div class="match-team">
@@ -383,12 +423,12 @@ async function renderMatchesForCurrentRound() {
           <div class="score-row">
             <span class="score-team">${match.homeTeam}</span>
             <input type="number" min="0" id="home-${matchId}" value="${
-      userPred ? userPred.homeGoalsPred : ""
-    }" ${!podePalpitar ? "disabled" : ""} />
+        userPred ? userPred.homeGoalsPred : ""
+      }" ${!podePalpitar ? "disabled" : ""} />
             <span class="score-x">x</span>
             <input type="number" min="0" id="away-${matchId}" value="${
-      userPred ? userPred.awayGoalsPred : ""
-    }" ${!podePalpitar ? "disabled" : ""} />
+        userPred ? userPred.awayGoalsPred : ""
+      }" ${!podePalpitar ? "disabled" : ""} />
             <span class="score-team">${match.awayTeam}</span>
           </div>
 
@@ -396,7 +436,8 @@ async function renderMatchesForCurrentRound() {
             <input
               type="checkbox"
               id="bonus-${matchId}"
-              data-round="${match.roundNumber}"
+              data-round="${match.roundNumber}"` +
+      `
               data-matchid="${matchId}"
               ${userPred && userPred.usedBonus ? "checked" : ""}
               ${!podePalpitar ? "disabled" : ""}
@@ -406,8 +447,8 @@ async function renderMatchesForCurrentRound() {
           </label>
 
           <button id="save-${matchId}" ${
-      !podePalpitar ? "disabled" : ""
-    }>Salvar palpite</button>
+        !podePalpitar ? "disabled" : ""
+      }>Salvar palpite</button>
         </div>
 
         <div class="match-column">
@@ -425,6 +466,20 @@ async function renderMatchesForCurrentRound() {
     }
 
     matchesListEl.appendChild(matchEl);
+
+    // toggle de detalhes de pontuação (abre/fecha bloco)
+    const toggleBtn = matchEl.querySelector(".pontos-toggle");
+    if (toggleBtn) {
+      const targetId = toggleBtn.getAttribute("data-target");
+      const detalhesEl = document.getElementById(targetId);
+      toggleBtn.addEventListener("click", () => {
+        if (!detalhesEl) return;
+        const isOpen = detalhesEl.style.display === "block";
+        detalhesEl.style.display = isOpen ? "none" : "block";
+        toggleBtn.textContent = isOpen ? "Detalhes ⌄" : "Detalhes ▲";
+        toggleBtn.setAttribute("aria-expanded", String(!isOpen));
+      });
+    }
 
     // listeners: salvar, bonus toggle, palpites dos outros
     const saveBtn = document.getElementById(`save-${matchId}`);
@@ -538,15 +593,10 @@ async function salvarPalpite(matchId, matchRound) {
     }
 
     // feedback visual
-    // após await setDoc(...) e após adicionar card.classList.add("saved-prediction")
-    // ----------------------------------------------------
-    // === Após salvar no Firestore (substitua o bloco visual antigo por este) ===
     const card = document.getElementById(`card-${matchId}`);
     if (card) {
-      // 1) classe visual do palpite salvo (gradient verde)
       card.classList.add("saved-prediction");
 
-      // 2) atualizar status textual imediatamente
       const statusEl = card.querySelector(".palpite-status");
       if (statusEl) {
         statusEl.textContent = "✔ Palpite Salvo!";
@@ -554,46 +604,32 @@ async function salvarPalpite(matchId, matchRound) {
         statusEl.classList.add("palpite-ok");
       }
 
-      // 3) atualizar inputs (confirma visualmente os valores)
       const homeInputEl = card.querySelector(`#home-${matchId}`);
       const awayInputEl = card.querySelector(`#away-${matchId}`);
       if (homeInputEl) homeInputEl.value = String(homeGoals);
       if (awayInputEl) awayInputEl.value = String(awayGoals);
 
-      // 4) atualizar checkbox de bônus no DOM
       const bonusEl = card.querySelector(`#bonus-${matchId}`);
       if (bonusEl) bonusEl.checked = !!usedBonus;
 
-      // 5) animar: adiciona classe e badge com ✓
-      // evita duplicar badge se já existir
       if (!card.classList.contains("animate-saved")) {
-        // criar badge (um pequeno círculo com ✓)
         const badge = document.createElement("div");
         badge.className = "save-badge";
         badge.innerText = "✔";
         card.appendChild(badge);
 
-        // disparar animação
-        // pequena folga para garantir render
         requestAnimationFrame(() => {
           card.classList.add("animate-saved");
         });
 
-        // remover animação + badge após 900ms
         setTimeout(() => {
           card.classList.remove("animate-saved");
-          // limpar badge depois da transição
           setTimeout(() => {
             if (badge && badge.parentNode) badge.parentNode.removeChild(badge);
           }, 300);
         }, 900);
       }
     }
-
-    // ----------------------------------------------------
-
-    // sucesso
-    // alert("Palpite salvo!");
 
     // depois de salvar, checar se salvou TODOS os palpites da rodada
     try {
@@ -701,44 +737,59 @@ function ouvirPalpitesDosOutros(matchId, hasStarted) {
   );
   onSnapshot(q, async (snapshot) => {
     if (snapshot.empty) {
-      el.textContent = "Nenhum palpite salvo.";
+      el.textContent = "Nenhum palpite ainda.";
       return;
     }
 
-    const arr = [];
     let total = 0;
     let casaWin = 0;
     let empate = 0;
     let foraWin = 0;
 
+    // mapa de placar -> contagem (ex: "1-0" -> 10)
+    const placarCounts = {};
+
     for (const docSnap of snapshot.docs) {
       const pred = docSnap.data();
       total++;
-      const userDoc = await getDoc(doc(db, "users", pred.userId));
-      const username = userDoc.exists() ? userDoc.data().username : "anônimo";
-
-      arr.push(
-        `${username}: ${pred.homeGoalsPred} x ${pred.awayGoalsPred}${
-          pred.usedBonus ? " (2x)" : ""
-        }`
-      );
 
       const diff = pred.homeGoalsPred - pred.awayGoalsPred;
       if (diff > 0) casaWin++;
       else if (diff < 0) foraWin++;
       else empate++;
+
+      const key = `${pred.homeGoalsPred}-${pred.awayGoalsPred}`;
+      placarCounts[key] = (placarCounts[key] || 0) + 1;
     }
 
     const percCasa = Math.round((casaWin / total) * 100);
     const percEmpate = Math.round((empate / total) * 100);
     const percFora = Math.round((foraWin / total) * 100);
 
+    // transformar placarCounts em array ordenado por quantidade
+    const placares = Object.entries(placarCounts)
+      .map(([score, count]) => ({
+        score,
+        count,
+        perc: Math.round((count / total) * 100),
+      }))
+      .sort((a, b) => b.count - a.count) // mais palpitados primeiro
+      .slice(0, 8); // limita para não ficar gigante
+
+    const placarText = placares.length
+      ? placares
+          .map((p) => `${p.perc}% em ${p.score.replace("-", " x ")}`)
+          .join(" • ")
+      : "Ainda sem dados de placar.";
+
     el.innerHTML = `
       <div class="palpite-stats">
         <div>${total} palpites</div>
         <div>Casa: ${percCasa}% | Empate: ${percEmpate}% | Visitante: ${percFora}%</div>
       </div>
-      <div class="palpite-list">${arr.join(" | ")}</div>
+      <div class="palpite-scores">
+        ${placarText}
+      </div>
     `;
   });
 }

@@ -256,6 +256,7 @@ input, select, button {
 
 /* Estados do card de jogo */
 .match-card.state-upcoming {
+  color: #ffffff;
   background: #fffde7; /* amarelo bem claro - jogo ainda vai começar */
 }
 
@@ -821,7 +822,11 @@ button:active {
 
 /* estados visuais do card */
 .match-card.state-upcoming {
-  border-color: rgba(248, 196, 113, 0.7);
+      background: linear-gradient(135deg, #2b27f3 0%, /* verde vivo inicial */ #1430d1 40%, /* verde médio */ #0f0258 100% /* verde escuro elegante */);
+    color: #ffffff !important;
+    border: 1px solid #37d1ec;
+    box-shadow: 0 0 12px rgba(6, 200, 80, 0.35);
+    transition: 10.35s all ease-in-out;
 }
 
 .match-card.state-finished {
@@ -935,7 +940,7 @@ button:active {
 
 .resultado-msg.exato {
   margin: 10px;
-  font-size: 1.10rem;
+  font-size: 0.80rem;
   color: #089037;
   font-weight: 800;
 }
@@ -948,7 +953,7 @@ button:active {
 
 .resultado-msg.pontos {
   margin: 10px;
-  font-size: 1.10rem;
+  font-size: 0.80rem;
   font-weight: 800;
   color: #60a5fa;
 }
@@ -1000,8 +1005,16 @@ button:active {
 
 /* Estatísticas da galera */
 .palpite-stats {
-  font-size: 0.75rem;
+  text-align: center;
+  font-size: 0.85rem;
   margin-bottom: 4px;
+  opacity: 0.9;
+}
+
+.palpite-scores {
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.4;
   opacity: 0.9;
 }
 
@@ -1576,16 +1589,18 @@ button:active {
 }
 
 .score-row input[type="number"] {
+  font-weight: 900;
   width: 44px;
   text-align: center;
   border-radius: 6px;
-  border: 3px solid #374151;
-  background: #e08104;
+  border: 1px solid #1db4a8;
+  background: transparent;
   color: #e5e7eb;
-  font-size: 1.3rem;
+  font-size: 2.5rem;
 }
 
 .score-row input[type="number"]:disabled {
+  color: #ffffff;
   opacity: 0.6;
   background-color: #02162d;
   text-align: center;
@@ -1826,6 +1841,161 @@ span{
   .match-card.animate-saved { animation: none !important; }
   .match-card .save-badge { transition: none !important; transform: none !important; opacity: 1 !important; }
 }
+
+.pontos-wrapper {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pontos-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(6, 200, 80, 0.15);
+  color: yellow;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.pontos-toggle {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.pontos-toggle:hover {
+  opacity: 1;
+}
+
+.pontos-detalhes {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.24);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+/* ============================
+   Pontos por jogo (badge + detalhes)
+   ============================ */
+
+.pontos-wrapper {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Badge principal de pontos */
+.pontos-badge {
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 0% 0%, #00ff9d1f, #00b85a33);
+  border: 1px solid rgba(0, 255, 157, 0.6);
+  color: #e8fff6;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow:
+    0 0 4px rgba(0, 255, 157, 0.3),
+    0 0 18px rgba(0, 255, 157, 0.15);
+  backdrop-filter: blur(3px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Botão "Detalhes" minimalista */
+.pontos-toggle {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 2px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.pontos-toggle::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, #ff7f2a, #ff4b00);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: center;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.pontos-toggle:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.pontos-toggle:hover {
+  color: #ffffff;
+}
+
+/* Caixa de detalhes dos pontos */
+.pontos-detalhes {
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #e6f7ff;
+  background: radial-gradient(circle at 0% 0%, #12232f, #050b11);
+  border: 1px solid rgba(0, 255, 157, 0.25);
+  box-shadow:
+    0 0 8px rgba(0, 0, 0, 0.6),
+    0 0 14px rgba(0, 255, 157, 0.12);
+  max-width: 100%;
+}
+
+/* pontinhos dentro dos detalhes */
+.pontos-detalhes br + br {
+  margin-top: 2px;
+}
+
+/* Transições suaves */
+.pontos-detalhes,
+.pontos-badge,
+.pontos-toggle {
+  transition: all 0.18s ease;
+}
+
+/* Respeitar prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .pontos-detalhes,
+  .pontos-badge,
+  .pontos-toggle,
+  .pontos-toggle::after {
+    transition: none;
+  }
+}
+
+
 
 
 
