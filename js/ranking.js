@@ -427,8 +427,8 @@ function renderRankingPorRodada() {
   const meusPontosRodada = meIndex >= 0 ? rankingAtual[meIndex].roundPoints : 0;
 
   const paymentStatusText = userIsPaid
-    ? `Status de pagamento: <span class="badge-inline badge-paid-inline">✅ Pago (apto a concorrer)</span>`
-    : `Status de pagamento: <span class="badge-inline badge-unpaid-inline">⛔ Não pago (não está apto a concorrer)</span>`;
+    ? `Status de pagamento: <span class="badge-inline badge-paid-inline">✅</span>`
+    : `Status de pagamento: <span class="badge-inline badge-unpaid-inline">⛔</span>`;
 
   currentUserInfoEl.innerHTML = `
     <p>Rodada ${currentRound}: você está na posição <strong>${minhaPosicao}</strong> com 
@@ -488,8 +488,8 @@ function renderRankingPorRodada() {
     const paidSetForRound = paidByRound[currentRound] || new Set();
     const isPaid = paidSetForRound.has(user.id);
     const seloHtml = isPaid
-      ? `<span class="ranking-badge ranking-badge-paid">✅ Pago</span>`
-      : `<span class="ranking-badge ranking-badge-unpaid">⛔ Não pago</span>`;
+      ? `<span class="ranking-badge ranking-badge-paid">✅</span>`
+      : `<span class="ranking-badge ranking-badge-unpaid">⛔</span>`;
 
     const item = document.createElement("div");
     item.className =
