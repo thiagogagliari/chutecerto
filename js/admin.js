@@ -20,10 +20,7 @@ import {
 const logoutBtn = document.getElementById("logout-btn");
 const matchesListEl = document.getElementById("matches-list");
 
-// container para usuários no admin (adicione em admin.html)
-const adminUsersListEl = document.getElementById("admin-users-list");
-
-// form de criação
+// form de criação de jogo
 const createMatchForm = document.getElementById("create-match-form");
 const roundInput = document.getElementById("round");
 const homeTeamInput = document.getElementById("home-team");
@@ -33,18 +30,51 @@ const homeLogoInput = document.getElementById("home-logo-url");
 const awayLogoInput = document.getElementById("away-logo-url");
 const createMatchBtn = document.getElementById("create-match-btn");
 
+// --- NOVOS ELEMENTOS: controle de pagamentos ---
+const paymentRoundInput = document.getElementById("payment-round");
+const paymentEmailInput = document.getElementById("payment-email");
+const markPaidBtn = document.getElementById("mark-paid-btn");
+const unmarkPaidBtn = document.getElementById("unmark-paid-btn");
+const paymentInfoEl = document.getElementById("payment-info");
+
 let currentUser = null;
 let currentUserProfile = null;
 
-// ==== LOGOUT ====
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-    window.location.href = "index.html";
-  });
+/* --------------------------------
+   Função para colorir o select de status
+-------------------------------- */
+function aplicarCorStatusSelect(selectEl) {
+  if (!selectEl) return;
+
+  // limpa classes anteriores
+  selectEl.classList.remove(
+    "select-scheduled",
+    "select-live",
+    "select-finished"
+  );
+
+  const value = selectEl.value;
+
+  if (value === "scheduled") {
+    selectEl.classList.add("select-scheduled"); // azul
+  } else if (value === "live") {
+    selectEl.classList.add("select-live"); // vermelho
+  } else if (value === "finished") {
+    selectEl.classList.add("select-finished"); // verde
+  }
 }
 
-// ==== AUTENTICAÇÃO E VERIFICAÇÃO DE ADMIN ====
+/* --------------------------------
+   LOGOUT
+-------------------------------- */
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "index.html";
+});
+
+/* --------------------------------
+   AUTENTICAÇÃO E VERIFICAÇÃO DE ADMIN
+-------------------------------- */
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "index.html";
@@ -72,18 +102,12 @@ onAuthStateChanged(auth, async (user) => {
 
   // admin autenticado
   carregarJogosAdmin();
-
-  // carregar lista de usuários (se container estiver presente)
-  if (adminUsersListEl) {
-    carregarUsuariosAdmin().catch((err) =>
-      console.error("Erro ao carregar usuários:", err)
-    );
-  }
 });
 
-// ==== FUNÇÃO PARA CARREGAR JOGOS NO ADMIN ====
+/* --------------------------------
+   CARREGAR JOGOS NO ADMIN
+-------------------------------- */
 async function carregarJogosAdmin() {
-  if (!matchesListEl) return;
   matchesListEl.innerHTML = "Carregando jogos cadastrados...";
 
   const snapshot = await getDocs(collection(db, "matches"));
@@ -108,10 +132,10 @@ async function carregarJogosAdmin() {
     });
   });
 
-  // ordenar por rodada e horário
+  // Rodada mais recente em cima, horário crescente dentro da rodada
   matches.sort((a, b) => {
     if (a.roundNumber !== b.roundNumber) {
-      return a.roundNumber - b.roundNumber;
+      return b.roundNumber - a.roundNumber;
     }
     return a._kickoffDate - b._kickoffDate;
   });
@@ -179,16 +203,27 @@ async function carregarJogosAdmin() {
       </div>
       <div class="admin-kickoff">${kickoffStr}</div>
       <div class="admin-actions">
-        <button type="button" class="btn-secondary" id="save-${
-          match.id
-        }">💾 Salvar</button>
-        <button type="button" class="btn-secondary" id="delete-${
-          match.id
-        }">🗑 Apagar</button>
+        <button type="button" class="btn-secondary" id="save-${match.id}">
+          💾 Salvar
+        </button>
+        <button type="button" class="btn-secondary" id="delete-${match.id}">
+          🗑 Apagar
+        </button>
       </div>
     `;
 
     matchesListEl.appendChild(row);
+
+    // aplica cor inicial no select de status
+    const statusSelect = document.getElementById(`status-${match.id}`);
+    aplicarCorStatusSelect(statusSelect);
+
+    // atualizar cor ao mudar o status
+    if (statusSelect) {
+      statusSelect.addEventListener("change", () => {
+        aplicarCorStatusSelect(statusSelect);
+      });
+    }
 
     // listeners de salvar / deletar
     document
@@ -201,59 +236,61 @@ async function carregarJogosAdmin() {
   });
 }
 
-// ==== CADASTRAR NOVO JOGO ====
-if (createMatchBtn) {
-  createMatchBtn.addEventListener("click", async () => {
-    const round = Number(roundInput.value);
-    const homeTeam = homeTeamInput.value.trim();
-    const awayTeam = awayTeamInput.value.trim();
-    const kickoff = kickoffInput.value;
-    const homeLogoUrl = homeLogoInput.value.trim();
-    const awayLogoUrl = awayLogoInput.value.trim();
+/* --------------------------------
+   CADASTRAR NOVO JOGO
+-------------------------------- */
+createMatchBtn.addEventListener("click", async () => {
+  const round = Number(roundInput.value);
+  const homeTeam = homeTeamInput.value.trim();
+  const awayTeam = awayTeamInput.value.trim();
+  const kickoff = kickoffInput.value;
+  const homeLogoUrl = homeLogoInput.value.trim();
+  const awayLogoUrl = awayLogoInput.value.trim();
 
-    if (!round || !homeTeam || !awayTeam || !kickoff) {
-      alert("Preencha rodada, times e data/hora.");
-      return;
-    }
+  if (!round || !homeTeam || !awayTeam || !kickoff) {
+    alert("Preencha rodada, times e data/hora.");
+    return;
+  }
 
-    const kickoffDate = new Date(kickoff);
-    if (isNaN(kickoffDate.getTime())) {
-      alert("Data/hora inválida.");
-      return;
-    }
+  const kickoffDate = new Date(kickoff);
+  if (isNaN(kickoffDate.getTime())) {
+    alert("Data/hora inválida.");
+    return;
+  }
 
-    try {
-      await addDoc(collection(db, "matches"), {
-        round,
-        homeTeam,
-        awayTeam,
-        kickoff: kickoffDate,
-        homeLogoUrl: homeLogoUrl || "",
-        awayLogoUrl: awayLogoUrl || "",
-        status: "scheduled",
-        homeScore: null,
-        awayScore: null,
-      });
+  try {
+    await addDoc(collection(db, "matches"), {
+      round,
+      homeTeam,
+      awayTeam,
+      kickoff: kickoffDate,
+      homeLogoUrl: homeLogoUrl || "",
+      awayLogoUrl: awayLogoUrl || "",
+      status: "scheduled",
+      homeScore: null,
+      awayScore: null,
+    });
 
-      alert("Jogo cadastrado com sucesso!");
+    alert("Jogo cadastrado com sucesso!");
 
-      // limpar form
-      roundInput.value = "";
-      homeTeamInput.value = "";
-      awayTeamInput.value = "";
-      kickoffInput.value = "";
-      homeLogoInput.value = "";
-      awayLogoInput.value = "";
+    // limpar form
+    roundInput.value = "";
+    homeTeamInput.value = "";
+    awayTeamInput.value = "";
+    kickoffInput.value = "";
+    homeLogoInput.value = "";
+    awayLogoInput.value = "";
 
-      carregarJogosAdmin();
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao cadastrar jogo: " + err.message);
-    }
-  });
-}
+    carregarJogosAdmin();
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao cadastrar jogo: " + err.message);
+  }
+});
 
-// ==== SALVAR JOGO (status e placar) ====
+/* --------------------------------
+   SALVAR JOGO (status e placar)
+-------------------------------- */
 async function salvarJogo(matchId) {
   const statusSelect = document.getElementById(`status-${matchId}`);
   const homeScoreInput = document.getElementById(`homeScore-${matchId}`);
@@ -305,7 +342,9 @@ async function salvarJogo(matchId) {
   }
 }
 
-// ==== APAGAR JOGO ====
+/* --------------------------------
+   APAGAR JOGO
+-------------------------------- */
 async function deletarJogo(matchId) {
   const confirma = confirm(
     "Tem certeza que deseja apagar este jogo? Isso também afetará os pontos dos usuários."
@@ -325,13 +364,9 @@ async function deletarJogo(matchId) {
   }
 }
 
-// ==== FUNÇÃO DE PONTUAÇÃO ====
-// Regras (que combinamos):
-// - Resultado correto (acertar vencedor ou empate): +3
-// - Acertar gols do mandante: +2
-// - Acertar gols do visitante: +2
-// - Acertar diferença de gols: +3
-// - Se usou bônus 2x: total * 2
+/* --------------------------------
+   FUNÇÃO DE PONTUAÇÃO
+-------------------------------- */
 function calcularPontosJogo(realHome, realAway, predHome, predAway, usedBonus) {
   let pontos = 0;
 
@@ -341,22 +376,15 @@ function calcularPontosJogo(realHome, realAway, predHome, predAway, usedBonus) {
   const resReal = diffReal > 0 ? "H" : diffReal < 0 ? "A" : "D";
   const resPred = diffPred > 0 ? "H" : diffPred < 0 ? "A" : "D";
 
-  // resultado (vencedor/empate)
   if (resReal === resPred) {
     pontos += 3;
   }
-
-  // gols do mandante
   if (realHome === predHome) {
     pontos += 2;
   }
-
-  // gols do visitante
   if (realAway === predAway) {
     pontos += 2;
   }
-
-  // diferença de gols
   if (diffReal === diffPred) {
     pontos += 3;
   }
@@ -368,7 +396,9 @@ function calcularPontosJogo(realHome, realAway, predHome, predAway, usedBonus) {
   return pontos;
 }
 
-// ==== RECALCULAR PONTUAÇÃO PARA UM JOGO FINALIZADO ====
+/* --------------------------------
+   RECALCULAR PONTUAÇÃO PARA UM JOGO FINALIZADO
+-------------------------------- */
 async function recalcularPontuacaoDoJogo(matchId, homeScore, awayScore) {
   const q = query(
     collection(db, "predictions"),
@@ -394,11 +424,9 @@ async function recalcularPontuacaoDoJogo(matchId, homeScore, awayScore) {
       usedBonus
     );
 
-    // atualizar prediction
     const predRef = doc(db, "predictions", predId);
     await updateDoc(predRef, { points: newPoints });
 
-    // ajustar totalPoints do usuário
     const userRef = doc(db, "users", pred.userId);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
@@ -410,7 +438,9 @@ async function recalcularPontuacaoDoJogo(matchId, homeScore, awayScore) {
   }
 }
 
-// ==== RESETAR PONTUAÇÃO PARA UM JOGO (quando não está finalizado) ====
+/* --------------------------------
+   RESETAR PONTUAÇÃO PARA UM JOGO (quando não está finalizado)
+-------------------------------- */
 async function resetarPontuacaoDoJogo(matchId) {
   const q = query(
     collection(db, "predictions"),
@@ -425,167 +455,181 @@ async function resetarPontuacaoDoJogo(matchId) {
 
     const oldPoints = pred.points || 0;
 
-    // zera a prediction
     const predRef = doc(db, "predictions", predId);
     await updateDoc(predRef, { points: 0 });
 
-    // desconta do totalPoints do usuário
-    // ajustar totalPoints do usuário
     const userRef = doc(db, "users", pred.userId);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
       const userData = userSnap.data();
       const currentTotal = userData.totalPoints || 0;
-      const newTotal = currentTotal - oldPoints + newPoints;
+      const newTotal = currentTotal - oldPoints;
       await updateDoc(userRef, { totalPoints: newTotal });
     }
   }
 }
-/* ============================
-   NOVA PARTE: LISTAGEM DE USUÁRIOS (ADMIN)
-   - mostra usuários com PIX mascarado
-   - botão "Mostrar" recarrega do Firestore e permite copiar
-   ============================ */
 
-// máscara simples para exibir PIX parcialmente
-function maskPix(pix) {
-  if (!pix) return "—";
-  const s = String(pix);
-  if (s.length <= 6) {
-    // ex: 123456 => **3456
-    return s.replace(/.(?=.{2})/g, "*");
-  }
-  const prefix = s.slice(0, 3);
-  const suffix = s.slice(-3);
-  return `${prefix}...${suffix}`;
+/* =========================================================================
+   CONTROLE DE PAGAMENTOS DO BOLÃO POR RODADA
+   - Coleção: roundEntries
+   - DocId: `${round}_${userId}`
+   - Também atualiza roundPrizes (lido no dashboard)
+   ======================================================================== */
+
+// busca usuário por email OU username
+async function encontrarUsuarioPorEmailOuUsername(texto) {
+  const valor = texto.trim();
+  if (!valor) return null;
+
+  // tenta por email
+  let qEmail = query(
+    collection(db, "users"),
+    where("email", "==", valor.toLowerCase())
+  );
+  let snap = await getDocs(qEmail);
+  if (!snap.empty) return snap.docs[0];
+
+  // tenta por username
+  let qUser = query(collection(db, "users"), where("username", "==", valor));
+  snap = await getDocs(qUser);
+  if (!snap.empty) return snap.docs[0];
+
+  return null;
 }
 
-// carrega e renderiza usuários no admin
-async function carregarUsuariosAdmin() {
-  if (!adminUsersListEl) return;
+// recalcula prêmio da rodada com base em quem pagou (R$ 10 por usuário)
+async function recalcularPremioRodada(roundNumber) {
+  const qEntries = query(
+    collection(db, "roundEntries"),
+    where("round", "==", roundNumber)
+  );
+  const snap = await getDocs(qEntries);
+  const count = snap.size;
+  const totalAmount = count * 10; // R$ 10 por usuário
 
-  adminUsersListEl.innerHTML = "Carregando usuários...";
+  const prizeRef = doc(db, "roundPrizes", String(roundNumber));
 
-  const snaps = await getDocs(collection(db, "users"));
-  const rows = [];
+  if (count === 0) {
+    // se ninguém pagou, desabilita prêmio
+    await setDoc(
+      prizeRef,
+      {
+        round: roundNumber,
+        enabled: false,
+        totalAmount: 0,
+        type: "money",
+        positions: 1,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+  } else {
+    await setDoc(
+      prizeRef,
+      {
+        round: roundNumber,
+        enabled: true,
+        totalAmount,
+        type: "money",
+        positions: 1, // 1 vencedor (pode mudar depois)
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+  }
 
-  snaps.forEach((uSnap) => {
-    const u = uSnap.data();
-    const uid = uSnap.id;
-    rows.push({ uid, ...u });
-  });
+  if (paymentInfoEl) {
+    paymentInfoEl.textContent = `Rodada ${roundNumber}: ${count} participante(s) pago(s). Prêmio atual: R$ ${totalAmount},00`;
+  }
+}
 
-  // ordenar por username (opcional)
-  rows.sort((a, b) => {
-    const A = (a.username || a.displayName || a.uid || "").toLowerCase();
-    const B = (b.username || b.displayName || b.uid || "").toLowerCase();
-    return A.localeCompare(B);
-  });
+// marcar pagamento
+async function marcarPagamentoRodada() {
+  if (!paymentRoundInput || !paymentEmailInput) return;
 
-  // construir lista
-  adminUsersListEl.innerHTML = "";
-  if (!rows.length) {
-    adminUsersListEl.innerHTML = "<div>Nenhum usuário cadastrado.</div>";
+  const roundNumber = Number(paymentRoundInput.value);
+  const texto = paymentEmailInput.value.trim();
+
+  if (!roundNumber || !texto) {
+    alert("Informe a rodada e o e-mail/username do usuário.");
     return;
   }
 
-  rows.forEach((u) => {
-    const row = document.createElement("div");
-    row.className = "admin-user-row";
-    row.style.display = "flex";
-    row.style.justifyContent = "space-between";
-    row.style.alignItems = "center";
-    row.style.padding = "8px 6px";
-    row.style.borderBottom = "1px solid rgba(255,255,255,0.04)";
+  const userDocSnap = await encontrarUsuarioPorEmailOuUsername(texto);
+  if (!userDocSnap) {
+    alert("Usuário não encontrado pelo e-mail/username informado.");
+    return;
+  }
 
-    const left = document.createElement("div");
-    left.innerHTML = `
-      <div style="font-weight:600;">${
-        u.username || u.displayName || u.uid
-      }</div>
-      <div style="font-size:0.9rem; opacity:0.85;">${u.email || ""}</div>
-      <div style="font-size:0.85rem; opacity:0.8;">Time: ${
-        u.favoriteTeamName || "-"
-      }</div>
-    `;
+  const userId = userDocSnap.id;
+  const userData = userDocSnap.data();
+  const docId = `${roundNumber}_${userId}`;
 
-    const right = document.createElement("div");
-    right.style.display = "flex";
-    right.style.alignItems = "center";
-    right.style.gap = "8px";
-
-    const pixSpan = document.createElement("span");
-    pixSpan.id = `pix-mask-${u.uid}`;
-    pixSpan.textContent = maskPix(u.pixKey || "");
-    pixSpan.style.fontFamily = "monospace";
-    pixSpan.style.marginRight = "6px";
-
-    const showBtn = document.createElement("button");
-    showBtn.className = "btn-sm";
-    showBtn.textContent = "Mostrar";
-
-    const copyBtn = document.createElement("button");
-    copyBtn.className = "btn-sm";
-    copyBtn.textContent = "Copiar";
-
-    // montar
-    right.appendChild(pixSpan);
-    right.appendChild(showBtn);
-    right.appendChild(copyBtn);
-    row.appendChild(left);
-    row.appendChild(right);
-    adminUsersListEl.appendChild(row);
-
-    // evento "Mostrar": recarrega do Firestore e exibe em prompt/confirm para copiar
-    showBtn.addEventListener("click", async () => {
-      try {
-        const snap = await getDoc(doc(db, "users", u.uid));
-        const full = snap.exists() ? snap.data().pixKey || "" : "";
-        if (!full) {
-          alert("Usuário não cadastrou chave PIX.");
-          return;
-        }
-        // opcional: atualizar a span com valor completo (mas cuidado com exposição)
-        const wantReveal = confirm(
-          `Chave PIX do usuário ${
-            u.username || u.uid
-          }:\n\n${full}\n\nClique OK para copiar para a área de transferência, Cancel para manter mascarado.`
-        );
-        if (wantReveal) {
-          try {
-            await navigator.clipboard.writeText(full);
-            alert("Chave copiada para área de transferência.");
-            // atualizar a máscara para mostrar (opcional)
-            pixSpan.textContent = full;
-          } catch {
-            window.prompt("Copie a chave PIX abaixo:", full);
-          }
-        }
-      } catch (err) {
-        console.error("Erro ao buscar chave PIX:", err);
-        alert("Erro ao obter chave PIX.");
-      }
+  try {
+    await setDoc(doc(db, "roundEntries", docId), {
+      round: roundNumber,
+      userId,
+      amount: 10,
+      paidAt: new Date(),
+      byAdmin: currentUser ? currentUser.uid : null,
+      username: userData.username || "",
+      email: userData.email || "",
     });
 
-    // evento "Copiar": copia a chave atual (recarrega do Firestore para garantir valor)
-    copyBtn.addEventListener("click", async () => {
-      try {
-        const snap = await getDoc(doc(db, "users", u.uid));
-        const full = snap.exists() ? snap.data().pixKey || "" : "";
-        if (!full) {
-          alert("Usuário não cadastrou chave PIX.");
-          return;
-        }
-        try {
-          await navigator.clipboard.writeText(full);
-          alert("Chave PIX copiada!");
-        } catch {
-          window.prompt("Copie a chave PIX abaixo:", full);
-        }
-      } catch (err) {
-        console.error("Erro ao copiar PIX:", err);
-        alert("Erro ao copiar chave PIX.");
-      }
-    });
-  });
+    await recalcularPremioRodada(roundNumber);
+
+    alert(
+      `Pagamento registrado: ${
+        userData.username || userData.email
+      } está apto na rodada ${roundNumber}.`
+    );
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao registrar pagamento: " + (err.message || err));
+  }
+}
+
+// remover pagamento
+async function removerPagamentoRodada() {
+  if (!paymentRoundInput || !paymentEmailInput) return;
+
+  const roundNumber = Number(paymentRoundInput.value);
+  const texto = paymentEmailInput.value.trim();
+
+  if (!roundNumber || !texto) {
+    alert("Informe a rodada e o e-mail/username do usuário.");
+    return;
+  }
+
+  const userDocSnap = await encontrarUsuarioPorEmailOuUsername(texto);
+  if (!userDocSnap) {
+    alert("Usuário não encontrado pelo e-mail/username informado.");
+    return;
+  }
+
+  const userId = userDocSnap.id;
+  const userData = userDocSnap.data();
+  const docId = `${roundNumber}_${userId}`;
+
+  try {
+    await deleteDoc(doc(db, "roundEntries", docId));
+    await recalcularPremioRodada(roundNumber);
+
+    alert(
+      `Pagamento removido: ${
+        userData.username || userData.email
+      } não está mais apto na rodada ${roundNumber}.`
+    );
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao remover pagamento: " + (err.message || err));
+  }
+}
+
+// listeners dos botões de pagamento
+if (markPaidBtn) {
+  markPaidBtn.addEventListener("click", marcarPagamentoRodada);
+}
+if (unmarkPaidBtn) {
+  unmarkPaidBtn.addEventListener("click", removerPagamentoRodada);
 }

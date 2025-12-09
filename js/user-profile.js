@@ -136,11 +136,12 @@ async function carregarPredictionsDoUsuario() {
     });
   });
 
-  // ordena por round asc, depois kickoff
+  // ✅ ordenar por round DESC (rodadas mais recentes em cima),
+  //    e dentro da rodada por horário ASC
   predictions.sort((a, b) => {
     const rA = Number(a.round) || 0;
     const rB = Number(b.round) || 0;
-    if (rA !== rB) return rA - rB;
+    if (rA !== rB) return rB - rA; // rodada maior primeiro
 
     const matchA = matchesMap.get(a.matchId);
     const matchB = matchesMap.get(b.matchId);
@@ -149,9 +150,10 @@ async function carregarPredictionsDoUsuario() {
     return dA - dB;
   });
 
+  // ✅ rounds também em ordem DESC (rodada atual no topo)
   rounds = Array.from(
     new Set(predictions.map((p) => Number(p.round) || 0).filter((r) => r > 0))
-  ).sort((a, b) => a - b);
+  ).sort((a, b) => b - a);
 }
 
 // --------- Resumo por rodada ---------
@@ -172,7 +174,8 @@ function montarResumoPorRodada() {
 
   const linhas = Object.keys(pontosPorRodada)
     .map((r) => Number(r))
-    .sort((a, b) => a - b)
+    // ✅ resumo também com rodadas mais recentes primeiro
+    .sort((a, b) => b - a)
     .map(
       (r) =>
         `<div class="profile-round-line">Rodada ${r}: <strong>${pontosPorRodada[r]} pontos</strong></div>`
@@ -187,6 +190,7 @@ function montarFiltroDeRodadas() {
   // limpar
   roundFilterEl.innerHTML = `<option value="">Todas as rodadas</option>`;
 
+  // ✅ rounds já está em ordem DESC
   rounds.forEach((r) => {
     const opt = document.createElement("option");
     opt.value = String(r);

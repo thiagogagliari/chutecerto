@@ -1459,12 +1459,12 @@ button:active {
 }
 
 .admin-match-status select {
-  padding: 4px 6px;
-  border-radius: 999px;
-  border: 1px solid #374151;
-  background: #020617;
-  color: #e5e7eb;
-  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  outline: none;
 }
 
 .admin-score-inputs {
@@ -1994,6 +1994,86 @@ span{
     transition: none;
   }
 }
+
+/* estilo base */
+.admin-match-status select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Agendado */
+/* Agendado = azul */
+.select-scheduled {
+  background: #007bff;
+}
+
+/* Ao vivo = vermelho */
+.select-live {
+  background: #d90000;
+}
+
+/* Finalizado = verde */
+.select-finished {
+  background: #00a84f;
+}
+
+/* Badge ao lado do nome no ranking por rodada */
+.ranking-name-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ranking-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+/* Pago ✅ */
+.ranking-badge-paid {
+  background: rgba(0, 200, 83, 0.16);
+  border-color: rgba(0, 200, 83, 0.8);
+  color: #b9ffcf;
+}
+
+/* Não pago ⛔ */
+.ranking-badge-unpaid {
+  background: rgba(244, 67, 54, 0.12);
+  border-color: rgba(244, 67, 54, 0.8);
+  color: #ffb8b5;
+}
+
+/* Badges inline na mensagem do topo */
+.badge-inline {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.badge-paid-inline {
+  background: rgba(0, 200, 83, 0.16);
+  border: 1px solid rgba(0, 200, 83, 0.8);
+  color: #b9ffcf;
+}
+
+.badge-unpaid-inline {
+  background: rgba(244, 67, 54, 0.12);
+  border: 1px solid rgba(244, 67, 54, 0.8);
+  color: #ffb8b5;
+}
+
+
 
 
 

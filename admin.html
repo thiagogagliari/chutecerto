@@ -49,6 +49,46 @@
           </p>
         </div>
 
+        <section class="admin-payments-card">
+          <h2>Controle de Pagamentos por Rodada</h2>
+          <p>
+            Marque aqui quem já pagou o bolão da rodada. Cada usuário paga R$
+            10,00.
+          </p>
+
+          <div class="admin-payments-form">
+            <div>
+              <label for="payment-round">Rodada:</label>
+              <input
+                type="number"
+                id="payment-round"
+                min="1"
+                placeholder="Ex: 1"
+              />
+            </div>
+
+            <div>
+              <label for="payment-email">E-mail ou username do usuário:</label>
+              <input
+                type="text"
+                id="payment-email"
+                placeholder="email@exemplo.com ou username"
+              />
+            </div>
+
+            <div class="admin-payments-buttons">
+              <button type="button" id="mark-paid-btn">
+                ✅ Marcar como pago
+              </button>
+              <button type="button" id="unmark-paid-btn">
+                ❌ Remover pagamento
+              </button>
+            </div>
+
+            <p id="payment-info" class="payment-info"></p>
+          </div>
+        </section>
+
         <div class="app-header-right">
           <a href="dashboard.html" class="btn-secondary">Meus palpites</a>
           <a href="ranking.html" class="btn-secondary">Ranking</a>

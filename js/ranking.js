@@ -33,6 +33,10 @@ let currentRound = null;
 let currentMode = "geral"; // "geral" ou "round"
 let searchTerm = ""; // filtro pelo nome do usuário
 
+// 🔹 NOVOS: pagamentos e prêmios por rodada
+let paidByRound = {}; // roundNumber -> Set(userId)
+let prizeByRound = {}; // roundNumber -> { totalAmount, enabled, positions }
+
 // logout
 logoutBtn.addEventListener("click", async () => {
   await signOut(auth);
@@ -112,6 +116,8 @@ onAuthStateChanged(auth, async (user) => {
   // carregar dados
   await carregarUsuarios();
   await carregarPredictions();
+  await carregarRoundEntries(); // 🔹 quem pagou
+  await carregarRoundPrizes(); // 🔹 prêmio por rodada
 
   // modo padrão: geral
   currentMode = "geral";
@@ -172,6 +178,47 @@ async function carregarPredictions() {
   if (rounds.length && currentRound === null) {
     currentRound = rounds[rounds.length - 1];
   }
+}
+
+// 🔹 NOVO: quem pagou por rodada (roundEntries)
+async function carregarRoundEntries() {
+  paidByRound = {};
+
+  const snapshot = await getDocs(collection(db, "roundEntries"));
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const roundNumber = Number(data.round) || 0;
+    const userId = data.userId;
+
+    if (!roundNumber || !userId) return;
+
+    if (!paidByRound[roundNumber]) {
+      paidByRound[roundNumber] = new Set();
+    }
+    paidByRound[roundNumber].add(userId);
+  });
+}
+
+// 🔹 NOVO: prêmio por rodada (roundPrizes)
+async function carregarRoundPrizes() {
+  prizeByRound = {};
+
+  const snapshot = await getDocs(collection(db, "roundPrizes"));
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    let roundNumber = Number(data.round) || 0;
+    if (!roundNumber) {
+      // fallback: tenta pelo próprio id do doc
+      roundNumber = Number(docSnap.id) || 0;
+    }
+    if (!roundNumber) return;
+
+    prizeByRound[roundNumber] = {
+      totalAmount: data.totalAmount || 0,
+      enabled: data.enabled !== false,
+      positions: data.positions || 1,
+    };
+  });
 }
 
 // --------- Ranking Geral ---------
@@ -358,14 +405,36 @@ function renderRankingPorRodada() {
     });
   }
 
-  // posição do usuário logado nessa rodada
+  // 🔹 info de pagamento e prêmio pro usuário logado
+  const paidSet = paidByRound[currentRound] || new Set();
+  const paidCount = paidSet.size || 0;
+  const userIsPaid = paidSet.has(currentUser.uid);
+
+  const prizeInfo = prizeByRound[currentRound];
+  let prizeText = "";
+
+  if (prizeInfo && prizeInfo.enabled && prizeInfo.totalAmount > 0) {
+    prizeText = `Prêmio da rodada: <strong>R$ ${prizeInfo.totalAmount},00</strong> com ${paidCount} participante(s) pago(s).`;
+  } else if (paidCount > 0) {
+    const totalAmount = paidCount * 10;
+    prizeText = `Prêmio estimado da rodada: <strong>R$ ${totalAmount},00</strong> com ${paidCount} participante(s) pago(s).`;
+  } else {
+    prizeText = `Nenhum pagamento registrado ainda para esta rodada.`;
+  }
+
   const meIndex = rankingAtual.findIndex((u) => u.id === currentUser.uid);
   const minhaPosicao = meIndex >= 0 ? meIndex + 1 : "-";
   const meusPontosRodada = meIndex >= 0 ? rankingAtual[meIndex].roundPoints : 0;
 
+  const paymentStatusText = userIsPaid
+    ? `Status de pagamento: <span class="badge-inline badge-paid-inline">✅ Pago (apto a concorrer)</span>`
+    : `Status de pagamento: <span class="badge-inline badge-unpaid-inline">⛔ Não pago (não está apto a concorrer)</span>`;
+
   currentUserInfoEl.innerHTML = `
     <p>Rodada ${currentRound}: você está na posição <strong>${minhaPosicao}</strong> com 
     <strong>${meusPontosRodada}</strong> pontos nesta rodada.</p>
+    <p>${paymentStatusText}</p>
+    <p>${prizeText}</p>
   `;
 
   // renderizar linhas
@@ -415,6 +484,13 @@ function renderRankingPorRodada() {
       }
     }
 
+    // 🔹 selo pago/não pago
+    const paidSetForRound = paidByRound[currentRound] || new Set();
+    const isPaid = paidSetForRound.has(user.id);
+    const seloHtml = isPaid
+      ? `<span class="ranking-badge ranking-badge-paid">✅ Pago</span>`
+      : `<span class="ranking-badge ranking-badge-unpaid">⛔ Não pago</span>`;
+
     const item = document.createElement("div");
     item.className =
       "ranking-item" + (user.id === currentUser.uid ? " ranking-me" : "");
@@ -427,11 +503,14 @@ function renderRankingPorRodada() {
       <div class="ranking-pos ${medalClass}">${posLabel}</div>
       <div>${avatarHtml}</div>
       <div class="ranking-name">
-        <div>${user.username}</div>
+        <div class="ranking-name-main">
+          <span>${user.username}</span>
+          ${seloHtml}
+        </div>
         ${
           user.favoriteTeamName
-          // ? `<div class="ranking-team">Time do coração: ${user.favoriteTeamName}</div>`
-          // : ""
+            ? `<div class="ranking-team">Time do coração: ${user.favoriteTeamName}</div>`
+            : ""
         }
       </div>
       <div class="ranking-points">${ptsRodada} pts</div>
