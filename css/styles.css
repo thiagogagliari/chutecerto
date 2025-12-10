@@ -89,9 +89,10 @@ input, select, button {
 }
 
 .ranking-pos {
-  width: 30px;
+  width: 20px;
   text-align: center;
-  font-weight: bold;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .ranking-avatar {
@@ -369,8 +370,9 @@ t {
 .ranking-avatar-placeholder {
   width: 32px;
   height: 32px;
-  border-radius: 25%;
+  border-radius: 50%;
   background: #ccc;
+  flex-shrink: 0;
 }
 
 .ranking-name {
@@ -407,6 +409,12 @@ t {
 .ranking-me {
   background: #e7f4ff;
 }
+
+/* some o texto "Time do coração" no ranking */
+.ranking-team {
+  display: none;
+}
+
 
 /* movimento entre rodadas */
 .move-up {
@@ -697,6 +705,7 @@ button:active {
 
 /* ===== Cards genéricos ===== */
 .card {
+  text-align: center;
   background: #151824;
   border-radius: 14px;
   padding: 10px 14px;
@@ -1177,7 +1186,7 @@ button:active {
   flex: 1;
   display: flex;
   flex-direction: column;
-  font-size: 1.4rem;
+  font-size: 1rem;
 }
 
 .ranking-team {
@@ -2084,6 +2093,144 @@ span{
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+@media (max-width: 600px) {
+  .ranking-item {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .ranking-pos {
+    width: 24px;
+    font-size: 0.8rem;
+  }
+
+  .ranking-avatar,
+  .ranking-avatar-placeholder {
+    width: 28px;
+    height: 28px;
+  }
+
+  .ranking-name-main span {
+    font-size: 0.9rem;
+    max-width: 130px; /* controla o tamanho do nome no mobile */
+  }
+
+  .ranking-points {
+    font-size: 0.9rem;
+  }
+
+  .ranking-move {
+    font-size: 0.7rem;
+  }
+}
+
+/* campeões: estilo dourado */
+.ranking-champion-general,
+.ranking-champion-round {
+  position: relative;
+  border: 1px solid rgba(255, 215, 0, 0.85);
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.4);
+}
+
+.ranking-champion-general::before,
+.ranking-champion-round::before {
+  content: "CAMPEÃO";
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffd54f, #ffb300);
+  color: #2b1b00;
+  font-weight: 800;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+}
+
+/* opcional: diferenciar cor do campeão de rodada (mais laranja) */
+.ranking-champion-round::before {
+  background: linear-gradient(90deg, #ffec80, #ff9100);
+}
+
+.profile-round-chart {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-round-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.profile-round-label {
+  width: 32px;
+  text-align: right;
+  opacity: 0.75;
+}
+
+.profile-round-bar-outer {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.profile-round-bar-inner {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff9100, #ff3c00);
+  box-shadow: 0 0 8px rgba(255, 145, 0, 0.9);
+  transition: width 0.4s ease;
+}
+
+.profile-round-points {
+  width: 60px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.profile-trophies {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.profile-trophy-badge {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* campeão geral */
+.profile-trophy-general {
+  background: linear-gradient(120deg, #ffd54f, #ffb300);
+  border-color: rgba(255, 215, 0, 0.9);
+  color: #2b1b00;
+}
+
+/* campeão de rodada */
+.profile-trophy-round {
+  background: linear-gradient(120deg, #ffcc80, #ff8a65);
+  border-color: rgba(255, 138, 101, 0.9);
+  color: #2b1509;
 }
 
 
