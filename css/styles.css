@@ -261,7 +261,7 @@ input, select, button {
 }
 
 .match-card.state-finished {
-  background: #eeeeee; /* cinza claro - jogo finalizado */
+  background: #be0707; /* cinza claro - jogo finalizado */
 }
 
 .match-card.state-default {
@@ -822,7 +822,7 @@ button:active {
 
 /* estados visuais do card */
 .match-card.state-upcoming {
-      background: linear-gradient(135deg, #2b27f3 0%, /* verde vivo inicial */ #1430d1 40%, /* verde médio */ #0f0258 100% /* verde escuro elegante */);
+    background: linear-gradient(135deg, #2b27f3 0%, /* verde vivo inicial */ #1430d1 40%, /* #0f0258 100% /* verde escuro elegante */);
     color: #ffffff !important;
     border: 1px solid #37d1ec;
     box-shadow: 0 0 12px rgba(6, 200, 80, 0.35);
@@ -2073,9 +2073,18 @@ span{
   color: #ffb8b5;
 }
 
-
-
-
+.bonus-info-badge {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1b5e20, #43a047);
+  color: #e9ffe9;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 
 
 

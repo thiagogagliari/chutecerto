@@ -1,6 +1,14 @@
 // js/dashboard.js
-// Substitua totalmente o arquivo antigo por este.
-// Requer: ./firebase-config.js que exporte `auth` e `db`.
+// Versão com:
+// - Navegação de rodadas
+// - Modal de promo e regras
+// - Modal "todos palpites salvos"
+// - Animação ao salvar
+// - Estatísticas da galera
+// - Bônus 2x com 1 por rodada
+// - Checkbox + botão sumindo quando o jogo começa / termina
+// - Selo visual quando bônus foi usado
+// - Prêmio de rodada (roundPrizes)
 
 import { auth, db } from "./firebase-config.js";
 import {
@@ -17,7 +25,6 @@ import {
   where,
   onSnapshot,
   orderBy,
-  updateDoc,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 /* ------------------------------
@@ -109,7 +116,6 @@ onAuthStateChanged(auth, async (user) => {
   let userSnap = await getDoc(userRef);
 
   if (!userSnap.exists()) {
-    // cria perfil básico
     const email = user.email || "";
     const defaultUsername = email
       ? email.split("@")[0]
@@ -129,7 +135,6 @@ onAuthStateChanged(auth, async (user) => {
 
   currentUserProfile = userSnap.data();
 
-  // exibir mini perfil no header
   const avatarHtml = currentUserProfile.avatarUrl
     ? `<img src="${currentUserProfile.avatarUrl}" class="user-avatar-header" />`
     : `<div class="user-avatar-header user-avatar-placeholder"></div>`;
@@ -150,7 +155,6 @@ onAuthStateChanged(auth, async (user) => {
     `;
   }
 
-  // carregar jogos assim que usuário autenticado
   await carregarJogos();
 });
 
@@ -196,7 +200,7 @@ async function carregarJogos() {
     return;
   }
 
-  // escolher rodada inicial: primeira com jogo não finalizado; se todas finalizadas, última rodada
+  // rodada inicial: primeira com jogo não finalizado; se todas finalizadas, última
   let rodadaEscolhida = rounds[rounds.length - 1];
   const agora = new Date();
   for (const r of rounds) {
@@ -245,7 +249,6 @@ async function renderMatchesForCurrentRound() {
     return;
   }
 
-  // filtrar e ordenar por horário
   const matchesOfRound = allMatches
     .filter((m) => m.roundNumber === currentRound)
     .sort((a, b) => a._kickoffDate - b._kickoffDate);
@@ -263,16 +266,18 @@ async function renderMatchesForCurrentRound() {
     const hasStarted = kickoffDate <= agora;
     const isLive = !isFinished && hasStarted;
     const isUpcoming = !isFinished && !hasStarted;
+
     const podePalpitar = !isFinished && !hasStarted;
 
-    // buscar prediction do usuário para esse jogo
+    // prediction do usuário
     const predId = `${currentUser.uid}_${matchId}`;
     const predSnap = await getDoc(doc(db, "predictions", predId));
     let userPred = null;
     if (predSnap.exists()) userPred = predSnap.data();
     const userHasPred = !!userPred;
+    const usedBonusFlag = userPred && userPred.usedBonus;
 
-    // prepare logos
+    // logos
     const homeLogoHtml = match.homeLogoUrl
       ? `<img src="${match.homeLogoUrl}" class="match-team-logo" />`
       : `<div class="match-team-logo placeholder-logo"></div>`;
@@ -289,7 +294,7 @@ async function renderMatchesForCurrentRound() {
         ? "Ao vivo"
         : "Finalizado";
 
-    // resultado final (se houver)
+    // resultado final
     const resultHtml =
       status === "finished" &&
       match.homeScore != null &&
@@ -297,16 +302,17 @@ async function renderMatchesForCurrentRound() {
         ? `<div class="match-score">${match.homeScore} x ${match.awayScore}</div>`
         : "";
 
-    // palpite da galera (placeholder; será preenchido por ouvirPalpitesDosOutros)
-    // status do palpite (não exibe nada se o jogo já estiver finalizado)
+    // status de palpite: some quando o jogo estiver finalizado
     const palpiteStatusHtml = !isFinished
       ? userHasPred
         ? `<span class="palpite-status palpite-ok">✔ Palpite Salvo!</span>`
         : `<span class="palpite-status palpite-pendente">Nenhum palpite salvo</span>`
       : "";
 
-    // ===== NOVA LÓGICA COMPACTA DE PONTOS =====
-    let pontosCompactHtml = "";
+    // badges de resultado + pontos
+    let resultadoBadgesHtml = "";
+    let pontosBadgeHtml = "";
+    let pontosDetalheHtml = "";
 
     if (
       isFinished &&
@@ -314,6 +320,20 @@ async function renderMatchesForCurrentRound() {
       match.homeScore != null &&
       match.awayScore != null
     ) {
+      const diffPred = userPred.homeGoalsPred - userPred.awayGoalsPred;
+      const diffReal = match.homeScore - match.awayScore;
+      const resPred = diffPred > 0 ? "H" : diffPred < 0 ? "A" : "D";
+      const resReal = diffReal > 0 ? "H" : diffReal < 0 ? "A" : "D";
+
+      // if (
+      //   userPred.homeGoalsPred === match.homeScore &&
+      //   userPred.awayGoalsPred === match.awayScore
+      // ) {
+      //   resultadoBadgesHtml = `<div class="resultado-msg exato">🎯 Acertei o placar exato!</div>`;
+      // } else if (resPred === resReal) {
+      //   resultadoBadgesHtml = `<div class="resultado-msg resultado">✔ Acertei o resultado!</div>`;
+      // }
+
       const detalhe = calcularDetalhePontuacao(
         match.homeScore,
         match.awayScore,
@@ -322,65 +342,61 @@ async function renderMatchesForCurrentRound() {
         userPred.usedBonus
       );
 
-      const pontos = detalhe.total || 0;
+      const pontosTotal =
+        typeof userPred.points === "number" ? userPred.points : detalhe.total;
 
-      // descrição dos critérios (para o "Detalhes")
-      const criterios = [];
-      const realHome = match.homeScore;
-      const realAway = match.awayScore;
-      const predHome = userPred.homeGoalsPred;
-      const predAway = userPred.awayGoalsPred;
-
-      const diffReal = realHome - realAway;
-      const diffPred = predHome - predAway;
-      const resReal = diffReal > 0 ? "H" : diffReal < 0 ? "A" : "D";
-      const resPred = diffPred > 0 ? "H" : diffPred < 0 ? "A" : "D";
-
-      if (realHome === predHome && realAway === predAway) {
-        criterios.push("🎯 Placar exato");
-      } else if (resReal === resPred) {
-        criterios.push("✔ Resultado (vitória/empate) correto");
-      }
-
-      if (realHome === predHome) {
-        criterios.push(`Gols do ${match.homeTeam} corretos`);
-      }
-      if (realAway === predAway) {
-        criterios.push(`Gols do ${match.awayTeam} corretos`);
-      }
-      if (diffReal === diffPred) {
-        criterios.push("Diferença de gols correta");
-      }
-      if (userPred.usedBonus) {
-        criterios.push("Bônus 2x aplicado");
-      }
-
-      if (!criterios.length && pontos === 0) {
-        criterios.push("Nenhum critério de pontuação acertado.");
-      }
-
-      const criteriosHtml = criterios.map((c) => `• ${c}`).join("<br>");
-
-      pontosCompactHtml = `
-        <div class="pontos-wrapper">
-          <span class="pontos-badge">
-            ${pontos} ponto${pontos === 1 ? "" : "s"}
+      // badge compacto de pontos + botão "Detalhes"
+      pontosBadgeHtml = `
+        <div class="pontos-badge-wrapper">
+          <span class="pontos-badge" data-matchid="${matchId}">
+            ${pontosTotal} pts
           </span>
-          <button type="button"
-                  class="pontos-toggle"
-                  data-target="pontos-det-${matchId}"
-                  aria-expanded="false">
-            Detalhes ⌄
+          <button type="button" class="pontos-detalhes-btn" data-matchid="${matchId}">
+            Detalhes
           </button>
         </div>
-        <div class="pontos-detalhes" id="pontos-det-${matchId}" style="display:none;">
-          ${criteriosHtml}
+      `;
+
+      const partesStr =
+        detalhe.partes.join(" + ") || "Nenhum critério somou pontos.";
+      const bonusStr = detalhe.usedBonus
+        ? "Bônus 2x aplicado sobre a base."
+        : "";
+
+      pontosDetalheHtml = `
+        <div class="pontos-detalhes" id="pontos-detalhes-${matchId}" style="display:none;">
+          <div>Base de pontos: ${partesStr}</div>
+          ${bonusStr ? `<div>${bonusStr}</div>` : ""}
         </div>
       `;
     }
-    // ===== FIM BLOCO NOVO =====
 
-    // construir card
+    // BONUS:
+    // - enquanto podePalpitar: checkbox + botão salvar
+    // - depois que começa / finaliza: some os controles
+    //   e, se usou bônus, mostra selo fixo
+    const bonusSectionHtml = podePalpitar
+      ? `
+        <label class="bonus-switch" for="bonus-${matchId}">
+          <input
+            type="checkbox"
+            id="bonus-${matchId}"
+            data-round="${match.roundNumber}"
+            data-matchid="${matchId}"
+            ${usedBonusFlag ? "checked" : ""}
+          />
+          <span class="slider"></span>
+          <span class="bonus-text">Usar bônus 2x nesta partida</span>
+        </label>
+
+        <button id="save-${matchId}">
+          Salvar palpite
+        </button>
+      `
+      : usedBonusFlag
+      ? `<div class="bonus-info-badge">🔥 Bônus 2x usado nesta partida (pontuação dobrada)</div>`
+      : "";
+
     const matchEl = document.createElement("div");
     matchEl.className = `match-card ${
       isFinished
@@ -390,8 +406,7 @@ async function renderMatchesForCurrentRound() {
         : "state-live"
     }`;
     matchEl.id = `card-${matchId}`;
-    matchEl.innerHTML =
-      `
+    matchEl.innerHTML = `
       <div class="match-top">
         <div class="match-team">
           ${homeLogoHtml}
@@ -407,7 +422,9 @@ async function renderMatchesForCurrentRound() {
           <span class="match-status ${status}">${statusLabel}</span>
           ${resultHtml}
           ${palpiteStatusHtml}
-          ${pontosCompactHtml}
+          ${resultadoBadgesHtml}
+          ${pontosBadgeHtml}
+          ${pontosDetalheHtml}
         </div>
 
         <div class="match-team">
@@ -423,32 +440,16 @@ async function renderMatchesForCurrentRound() {
           <div class="score-row">
             <span class="score-team">${match.homeTeam}</span>
             <input type="number" min="0" id="home-${matchId}" value="${
-        userPred ? userPred.homeGoalsPred : ""
-      }" ${!podePalpitar ? "disabled" : ""} />
+      userPred ? userPred.homeGoalsPred : ""
+    }" ${!podePalpitar ? "disabled" : ""} />
             <span class="score-x">x</span>
             <input type="number" min="0" id="away-${matchId}" value="${
-        userPred ? userPred.awayGoalsPred : ""
-      }" ${!podePalpitar ? "disabled" : ""} />
+      userPred ? userPred.awayGoalsPred : ""
+    }" ${!podePalpitar ? "disabled" : ""} />
             <span class="score-team">${match.awayTeam}</span>
           </div>
 
-          <label class="bonus-switch" for="bonus-${matchId}">
-            <input
-              type="checkbox"
-              id="bonus-${matchId}"
-              data-round="${match.roundNumber}"` +
-      `
-              data-matchid="${matchId}"
-              ${userPred && userPred.usedBonus ? "checked" : ""}
-              ${!podePalpitar ? "disabled" : ""}
-            />
-            <span class="slider"></span>
-            <span class="bonus-text">Usar bônus 2x nesta partida</span>
-          </label>
-
-          <button id="save-${matchId}" ${
-        !podePalpitar ? "disabled" : ""
-      }>Salvar palpite</button>
+          ${bonusSectionHtml}
         </div>
 
         <div class="match-column">
@@ -460,37 +461,22 @@ async function renderMatchesForCurrentRound() {
       </div>
     `;
 
-    // aplicar classe saved-prediction se já tiver palpite salvo
     if (userHasPred) {
       matchEl.classList.add("saved-prediction");
     }
 
     matchesListEl.appendChild(matchEl);
 
-    // toggle de detalhes de pontuação (abre/fecha bloco)
-    const toggleBtn = matchEl.querySelector(".pontos-toggle");
-    if (toggleBtn) {
-      const targetId = toggleBtn.getAttribute("data-target");
-      const detalhesEl = document.getElementById(targetId);
-      toggleBtn.addEventListener("click", () => {
-        if (!detalhesEl) return;
-        const isOpen = detalhesEl.style.display === "block";
-        detalhesEl.style.display = isOpen ? "none" : "block";
-        toggleBtn.textContent = isOpen ? "Detalhes ⌄" : "Detalhes ▲";
-        toggleBtn.setAttribute("aria-expanded", String(!isOpen));
-      });
-    }
-
-    // listeners: salvar, bonus toggle, palpites dos outros
+    // botão salvar só existe se podePalpitar
     const saveBtn = document.getElementById(`save-${matchId}`);
-    if (saveBtn) {
+    if (saveBtn && podePalpitar) {
       saveBtn.addEventListener("click", () =>
         salvarPalpite(matchId, match.roundNumber)
       );
     }
 
     const bonusCheckbox = document.getElementById(`bonus-${matchId}`);
-    if (bonusCheckbox) {
+    if (bonusCheckbox && podePalpitar) {
       bonusCheckbox.addEventListener("change", async (e) => {
         const checked = e.target.checked;
         const roundAttr = e.target.getAttribute("data-round");
@@ -499,23 +485,37 @@ async function renderMatchesForCurrentRound() {
       });
     }
 
-    // Mostrar palpites da galera apenas se o jogo já começou
+    // botão "Detalhes" dos pontos
+    const detalhesBtn = matchEl.querySelector(
+      `.pontos-detalhes-btn[data-matchid="${matchId}"]`
+    );
+    if (detalhesBtn) {
+      detalhesBtn.addEventListener("click", () => {
+        const detalhesEl = document.getElementById(
+          `pontos-detalhes-${matchId}`
+        );
+        if (!detalhesEl) return;
+        const isHidden =
+          detalhesEl.style.display === "" ||
+          detalhesEl.style.display === "none";
+        detalhesEl.style.display = isHidden ? "block" : "none";
+      });
+    }
+
     ouvirPalpitesDosOutros(matchId, hasStarted);
   }
 
-  // voltar ao topo da lista após render
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 /* ------------------------------
-   Função salvarPalpite (validação e gravação)
+   salvarPalpite
 -------------------------------*/
 async function salvarPalpite(matchId, matchRound) {
   const homeInput = document.getElementById(`home-${matchId}`);
   const awayInput = document.getElementById(`away-${matchId}`);
   const bonusInput = document.getElementById(`bonus-${matchId}`);
 
-  // validações
   if (!homeInput || !awayInput) {
     alert("Erro: campos de placar não encontrados.");
     return;
@@ -549,7 +549,7 @@ async function salvarPalpite(matchId, matchRound) {
     return;
   }
 
-  // regra: 1 bônus por rodada
+  // 1 bônus por rodada
   if (usedBonus) {
     const bonusUsage = currentUserProfile.bonusUsage || {};
     if (
@@ -580,7 +580,6 @@ async function salvarPalpite(matchId, matchRound) {
       { merge: true }
     );
 
-    // atualizar bonusUsage do usuário se necessário
     if (usedBonus) {
       const bonusUsage = currentUserProfile.bonusUsage || {};
       bonusUsage[matchRound] = matchId;
@@ -592,7 +591,6 @@ async function salvarPalpite(matchId, matchRound) {
       currentUserProfile.bonusUsage = bonusUsage;
     }
 
-    // feedback visual
     const card = document.getElementById(`card-${matchId}`);
     if (card) {
       card.classList.add("saved-prediction");
@@ -631,7 +629,6 @@ async function salvarPalpite(matchId, matchRound) {
       }
     }
 
-    // depois de salvar, checar se salvou TODOS os palpites da rodada
     try {
       await checkAllPredictionsSaved(matchRound);
     } catch (err) {
@@ -654,7 +651,6 @@ async function handleBonusToggle(matchId, matchRound, checked) {
     return;
   }
 
-  // pred deve existir (exigir que o usuário salve palpite antes)
   const predRef = doc(db, "predictions", `${currentUser.uid}_${matchId}`);
   const predSnap = await getDoc(predRef);
   if (!predSnap.exists()) {
@@ -668,7 +664,6 @@ async function handleBonusToggle(matchId, matchRound, checked) {
   const previousMatchId = bonusUsage[matchRound];
 
   if (checked) {
-    // desmarcar anterior se diferente
     if (previousMatchId && previousMatchId !== matchId) {
       const prevPredRef = doc(
         db,
@@ -683,10 +678,8 @@ async function handleBonusToggle(matchId, matchRound, checked) {
       if (prevCb) prevCb.checked = false;
     }
 
-    // marcar o atual
     await setDoc(predRef, { usedBonus: true }, { merge: true });
 
-    // atualizar users.bonusUsage
     const newBonusUsage = { ...(currentUserProfile.bonusUsage || {}) };
     newBonusUsage[matchRound] = matchId;
     await setDoc(
@@ -696,14 +689,12 @@ async function handleBonusToggle(matchId, matchRound, checked) {
     );
     currentUserProfile.bonusUsage = newBonusUsage;
 
-    // desmarca outras checkboxes do mesmo round no DOM
     document
       .querySelectorAll(`input[type="checkbox"][data-round="${matchRound}"]`)
       .forEach((el) => {
         if (el.id !== `bonus-${matchId}`) el.checked = false;
       });
   } else {
-    // desmarcou -> remover flag
     await setDoc(predRef, { usedBonus: false }, { merge: true });
     const newBonusUsage = { ...(currentUserProfile.bonusUsage || {}) };
     if (newBonusUsage && newBonusUsage[matchRound]) {
@@ -746,7 +737,6 @@ function ouvirPalpitesDosOutros(matchId, hasStarted) {
     let empate = 0;
     let foraWin = 0;
 
-    // mapa de placar -> contagem (ex: "1-0" -> 10)
     const placarCounts = {};
 
     for (const docSnap of snapshot.docs) {
@@ -766,15 +756,14 @@ function ouvirPalpitesDosOutros(matchId, hasStarted) {
     const percEmpate = Math.round((empate / total) * 100);
     const percFora = Math.round((foraWin / total) * 100);
 
-    // transformar placarCounts em array ordenado por quantidade
     const placares = Object.entries(placarCounts)
       .map(([score, count]) => ({
         score,
         count,
         perc: Math.round((count / total) * 100),
       }))
-      .sort((a, b) => b.count - a.count) // mais palpitados primeiro
-      .slice(0, 8); // limita para não ficar gigante
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
 
     const placarText = placares.length
       ? placares
@@ -795,7 +784,7 @@ function ouvirPalpitesDosOutros(matchId, hasStarted) {
 }
 
 /* ------------------------------
-   Detalhe da pontuação (para mostrar ao usuário)
+   Detalhe da pontuação
 -------------------------------*/
 function calcularDetalhePontuacao(
   realHome,
@@ -835,12 +824,12 @@ function calcularDetalhePontuacao(
 }
 
 /* ------------------------------
-   Modal "Todos palpites salvos" e função de checagem
+   Modal "Todos palpites salvos"
 -------------------------------*/
 function openAllSavedModal(roundNumber) {
   if (!allSavedModal) return;
   const key = `allSavedShown_round_${roundNumber}`;
-  if (localStorage.getItem(key)) return; // já mostrado
+  if (localStorage.getItem(key)) return;
   allSavedModal.style.display = "flex";
   localStorage.setItem(key, "1");
   setTimeout(() => closeAllSavedModal(), 6000);
@@ -858,7 +847,7 @@ if (allSavedModal)
 
 async function checkAllPredictionsSaved(roundNumber) {
   if (!currentUser) return false;
-  // contar jogos dessa rodada
+
   const matchesQ = query(
     collection(db, "matches"),
     where("round", "==", roundNumber)
@@ -867,7 +856,6 @@ async function checkAllPredictionsSaved(roundNumber) {
   const matchesCount = matchesSnap.size;
   if (!matchesCount) return false;
 
-  // contar predictions do usuário nessa rodada
   const predsQ = query(
     collection(db, "predictions"),
     where("round", "==", roundNumber),
@@ -883,7 +871,7 @@ async function checkAllPredictionsSaved(roundNumber) {
 }
 
 /* ------------------------------
-   Promo modal & rules modal logic (simples)
+   Promo & Rules modals
 -------------------------------*/
 if (promoBtn && promoModal) {
   promoBtn.addEventListener("click", () => {
@@ -919,7 +907,7 @@ if (rulesModal)
   });
 
 /* ------------------------------
-   showRoundPrizeLabel (opcional)
+   showRoundPrizeLabel
 -------------------------------*/
 async function showRoundPrizeLabel(roundNumber) {
   if (!roundPrizeLabelEl) return;
@@ -948,7 +936,3 @@ async function showRoundPrizeLabel(roundNumber) {
     if (roundPrizeLabelEl) roundPrizeLabelEl.style.display = "none";
   }
 }
-
-/* ------------------------------
-   Export (nenhum) - fim do arquivo
--------------------------------*/
