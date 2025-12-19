@@ -13,6 +13,9 @@ import {
   where,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+/* ------------------------------
+   ELEMENTOS DOM
+-------------------------------*/
 const logoutBtn = document.getElementById("logout-btn");
 const profileTitleEl = document.getElementById("profile-title");
 const userInfoEl = document.getElementById("profile-user-info");
@@ -20,22 +23,37 @@ const roundSummaryEl = document.getElementById("profile-round-summary");
 const roundFilterEl = document.getElementById("profile-round-filter");
 const predictionsListEl = document.getElementById("profile-predictions-list");
 
-// pegar userId da URL
+// 🔹 opcional (não quebra se não existir)
+const titlesEl = document.getElementById("profile-titles");
+
+/* ------------------------------
+   PARAMS
+-------------------------------*/
 const params = new URLSearchParams(window.location.search);
 const profileUserId = params.get("userId");
 
+/* ------------------------------
+   ESTADO
+-------------------------------*/
 let loggedUser = null;
 let profileUser = null;
-let matchesMap = new Map(); // matchId -> matchData
-let predictions = []; // todos os palpites desse usuário
-let rounds = []; // rodadas onde ele palpitou
+let matchesMap = new Map();
+let predictions = [];
+let rounds = [];
 
-// logout
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-  window.location.href = "index.html";
-});
+/* ------------------------------
+   LOGOUT
+-------------------------------*/
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    window.location.href = "index.html";
+  });
+}
 
+/* ------------------------------
+   AUTH
+-------------------------------*/
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "index.html";
@@ -45,7 +63,7 @@ onAuthStateChanged(auth, async (user) => {
   loggedUser = user;
 
   if (!profileUserId) {
-    userInfoEl.innerHTML = "Usuário não especificado.";
+    userInfoEl.textContent = "Usuário não especificado.";
     return;
   }
 
@@ -56,19 +74,26 @@ onAuthStateChanged(auth, async (user) => {
   montarResumoPorRodada();
   montarFiltroDeRodadas();
   renderPredictions();
+
+  // 🔒 títulos NÃO podem quebrar o perfil
+  try {
+    await carregarTitulosEGanhos();
+  } catch (err) {
+    console.warn("Títulos ainda não disponíveis:", err);
+  }
 });
 
-// --------- Carregamento ---------
-
+/* ------------------------------
+   PERFIL
+-------------------------------*/
 async function carregarUsuarioPerfil() {
-  const userRef = doc(db, "users", profileUserId);
-  const snap = await getDoc(userRef);
+  const snap = await getDoc(doc(db, "users", profileUserId));
   if (!snap.exists()) {
-    userInfoEl.innerHTML = "Usuário não encontrado.";
+    userInfoEl.textContent = "Usuário não encontrado.";
     return;
   }
-  profileUser = snap.data();
 
+  profileUser = snap.data();
   profileTitleEl.textContent = `Perfil de ${profileUser.username}`;
 
   const avatarHtml = profileUser.avatarUrl
@@ -85,9 +110,9 @@ async function carregarUsuarioPerfil() {
             ? `<div class="profile-team">Time do coração: ${profileUser.favoriteTeamName}</div>`
             : ""
         }
-        <div class="profile-total-points">Pontos totais: <strong>${
-          profileUser.totalPoints || 0
-        }</strong></div>
+        <div class="profile-total-points">
+          Pontos totais: <strong>${profileUser.totalPoints || 0}</strong>
+        </div>
         ${
           loggedUser.uid === profileUserId
             ? `<div class="profile-badge">Este é o seu perfil</div>`
@@ -98,30 +123,33 @@ async function carregarUsuarioPerfil() {
   `;
 }
 
+/* ------------------------------
+   MATCHES
+-------------------------------*/
 async function carregarMatches() {
-  matchesMap = new Map();
+  matchesMap.clear();
+
   const snapshot = await getDocs(collection(db, "matches"));
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
-    const matchId = docSnap.id;
+    const kickoffDate = data.kickoff?.toDate
+      ? data.kickoff.toDate()
+      : new Date(data.kickoff);
 
-    let kickoffDate;
-    if (data.kickoff?.toDate) {
-      kickoffDate = data.kickoff.toDate();
-    } else {
-      kickoffDate = new Date(data.kickoff);
-    }
-
-    matchesMap.set(matchId, {
-      id: matchId,
+    matchesMap.set(docSnap.id, {
+      id: docSnap.id,
       ...data,
       _kickoffDate: kickoffDate,
     });
   });
 }
 
+/* ------------------------------
+   PREDICTIONS
+-------------------------------*/
 async function carregarPredictionsDoUsuario() {
   predictions = [];
+
   const q = query(
     collection(db, "predictions"),
     where("userId", "==", profileUserId)
@@ -129,71 +157,60 @@ async function carregarPredictionsDoUsuario() {
 
   const snapshot = await getDocs(q);
   snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    predictions.push({
-      id: docSnap.id,
-      ...data,
-    });
+    predictions.push({ id: docSnap.id, ...docSnap.data() });
   });
 
-  // ✅ ordenar por round DESC (rodadas mais recentes em cima),
-  //    e dentro da rodada por horário ASC
+  // 🔹 rodada mais recente primeiro
   predictions.sort((a, b) => {
     const rA = Number(a.round) || 0;
     const rB = Number(b.round) || 0;
-    if (rA !== rB) return rB - rA; // rodada maior primeiro
+    if (rA !== rB) return rB - rA;
 
-    const matchA = matchesMap.get(a.matchId);
-    const matchB = matchesMap.get(b.matchId);
-    const dA = matchA?._kickoffDate || new Date(0);
-    const dB = matchB?._kickoffDate || new Date(0);
+    const dA = matchesMap.get(a.matchId)?._kickoffDate || new Date(0);
+    const dB = matchesMap.get(b.matchId)?._kickoffDate || new Date(0);
     return dA - dB;
   });
 
-  // ✅ rounds também em ordem DESC (rodada atual no topo)
-  rounds = Array.from(
-    new Set(predictions.map((p) => Number(p.round) || 0).filter((r) => r > 0))
-  ).sort((a, b) => b - a);
+  rounds = [...new Set(predictions.map((p) => Number(p.round)))]
+    .filter(Boolean)
+    .sort((a, b) => b - a);
 }
 
-// --------- Resumo por rodada ---------
-
+/* ------------------------------
+   RESUMO POR RODADA
+-------------------------------*/
 function montarResumoPorRodada() {
   if (!predictions.length) {
-    roundSummaryEl.innerHTML = "Este usuário ainda não possui palpites.";
+    roundSummaryEl.textContent = "Este usuário ainda não possui palpites.";
     return;
   }
 
-  const pontosPorRodada = {};
+  const pontos = {};
   predictions.forEach((p) => {
-    const r = Number(p.round) || 0;
-    if (!r) return;
-    if (!pontosPorRodada[r]) pontosPorRodada[r] = 0;
-    pontosPorRodada[r] += p.points || 0;
+    if (!pontos[p.round]) pontos[p.round] = 0;
+    pontos[p.round] += p.points || 0;
   });
 
-  const linhas = Object.keys(pontosPorRodada)
-    .map((r) => Number(r))
-    // ✅ resumo também com rodadas mais recentes primeiro
+  roundSummaryEl.innerHTML = Object.keys(pontos)
     .sort((a, b) => b - a)
     .map(
       (r) =>
-        `<div class="profile-round-line">Rodada ${r}: <strong>${pontosPorRodada[r]} pontos</strong></div>`
-    );
-
-  roundSummaryEl.innerHTML = linhas.join("") || "Sem pontos por rodada ainda.";
+        `<div class="profile-round-line">
+          Rodada ${r}: <strong>${pontos[r]} pontos</strong>
+        </div>`
+    )
+    .join("");
 }
 
-// --------- Filtro de rodadas ---------
-
+/* ------------------------------
+   FILTRO
+-------------------------------*/
 function montarFiltroDeRodadas() {
-  // limpar
   roundFilterEl.innerHTML = `<option value="">Todas as rodadas</option>`;
 
-  // ✅ rounds já está em ordem DESC
   rounds.forEach((r) => {
     const opt = document.createElement("option");
-    opt.value = String(r);
+    opt.value = r;
     opt.textContent = `Rodada ${r}`;
     roundFilterEl.appendChild(opt);
   });
@@ -204,69 +221,52 @@ function montarFiltroDeRodadas() {
   });
 }
 
-// --------- Renderização dos palpites ---------
-
+/* ------------------------------
+   RENDER PALPITES
+-------------------------------*/
 function renderPredictions() {
   if (!predictions.length) {
-    predictionsListEl.innerHTML =
+    predictionsListEl.textContent =
       "Este usuário ainda não tem palpites registrados.";
     return;
   }
 
-  const filtroRodada = roundFilterEl.value ? Number(roundFilterEl.value) : null;
+  const filtro = roundFilterEl.value ? Number(roundFilterEl.value) : null;
 
-  let lista = predictions;
-  if (filtroRodada) {
-    lista = lista.filter((p) => Number(p.round) === filtroRodada);
-  }
+  const lista = filtro
+    ? predictions.filter((p) => Number(p.round) === filtro)
+    : predictions;
 
   if (!lista.length) {
-    predictionsListEl.innerHTML = "Nenhum palpite nesta rodada.";
+    predictionsListEl.textContent = "Nenhum palpite nesta rodada.";
     return;
   }
 
   const agora = new Date();
 
-  const linhasHtml = lista.map((p) => {
+  const rows = lista.map((p) => {
     const match = matchesMap.get(p.matchId);
-    const round = Number(p.round) || 0;
-    const pontos = p.points || 0;
+    const hasStarted = match && match._kickoffDate <= agora;
 
-    let matchInfo = "Jogo não encontrado";
-    let dataInfo = "";
-    let resultadoFinal = "";
-    let hasStarted = false;
-
-    if (match) {
-      matchInfo = `${match.homeTeam} x ${match.awayTeam}`;
-      dataInfo = match._kickoffDate ? match._kickoffDate.toLocaleString() : "";
-      hasStarted = match._kickoffDate && match._kickoffDate <= agora;
-
-      if (
-        match.status === "finished" &&
-        match.homeScore != null &&
-        match.awayScore != null
-      ) {
-        resultadoFinal = `${match.homeScore} x ${match.awayScore}`;
-      }
-    }
-
-    // 🔒 Só mostra o palpite depois que o jogo começar
-    const podeMostrarPalpite = hasStarted;
-    const palpiteTexto = podeMostrarPalpite
+    const palpite = hasStarted
       ? `${p.homeGoalsPred} x ${p.awayGoalsPred}${p.usedBonus ? " (2x)" : ""}`
-      : "⏳ Palpite oculto até o início do jogo";
+      : "⏳ Palpite oculto";
+
+    const resultado =
+      match?.status === "finished"
+        ? `${match.homeScore} x ${match.awayScore}`
+        : "-";
 
     return `
       <tr>
-        <td>${round || "-"}</td>
+        <td>${p.round}</td>
         <td>
-          <div class="profile-match-main">${matchInfo}</div>
-          <div class="profile-match-date">${dataInfo}</div>
+          <div>${match?.homeTeam} x ${match?.awayTeam}</div>
+          <small>${match?._kickoffDate?.toLocaleString() || ""}</small>
         </td>
-        <td>${palpiteTexto}</td>
-        <td>${resultadoFinal || "-"}</td>
-        <td>${pontos}</td>
+        <td>${palpite}</td>
+        <td>${resultado}</td>
+        <td>${p.points || 0}</td>
       </tr>
     `;
   });
@@ -283,10 +283,22 @@ function renderPredictions() {
             <th>Pontos</th>
           </tr>
         </thead>
-        <tbody>
-          ${linhasHtml.join("")}
-        </tbody>
+        <tbody>${rows.join("")}</tbody>
       </table>
+    </div>
+  `;
+}
+
+/* ------------------------------
+   TÍTULOS E GANHOS (SEGURO)
+-------------------------------*/
+async function carregarTitulosEGanhos() {
+  if (!titlesEl) return;
+
+  // 🔹 por enquanto vazio (não quebra)
+  titlesEl.innerHTML = `
+    <div class="profile-titles-empty">
+      Nenhum título conquistado ainda.
     </div>
   `;
 }

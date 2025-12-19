@@ -13,16 +13,15 @@
       rel="stylesheet"
     />
   </head>
+
   <body class="app-body">
     <div class="app-shell">
       <!-- Header -->
       <header class="app-header">
         <div class="app-header-left">
-          <span class="brand-badge">App Chute Certo</span>
+          <span class="brand-badge">Bolão Chute Certo</span>
           <h1 id="profile-title">Perfil</h1>
-          <p>
-            Veja todos os palpites, pontos por jogo e desempenho por rodada.
-          </p>
+          <p>Veja seus palpites, desempenho por rodada e histórico no bolão.</p>
         </div>
         <div class="app-header-right">
           <a href="ranking.html" class="btn-secondary">Voltar ao ranking</a>
@@ -34,6 +33,14 @@
         <!-- Card com info do usuário -->
         <section class="card profile-card">
           <div id="profile-user-info">Carregando usuário...</div>
+        </section>
+
+        <!-- Títulos e ganhos (não quebra se vazio) -->
+        <section class="card profile-titles-card">
+          <h2>🏆 Títulos e ganhos</h2>
+          <div id="profile-titles">
+            <p class="muted">Nenhuma conquista registrada ainda.</p>
+          </div>
         </section>
 
         <!-- Resumo por rodada -->
