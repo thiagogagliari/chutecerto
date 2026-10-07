@@ -458,7 +458,7 @@ t {
   min-height: 100vh;
   background-image: url("../logo.png");
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: fit;
   color: #f5f5f5;
   display: flex;
   justify-content: center;

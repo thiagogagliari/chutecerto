@@ -43,102 +43,102 @@ const TEAMS = {
   atleticomg: {
     name: "Atlético/MG",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/AtleticoMineiro_HomeFront_25_26.svg",
+      "https://static.flashscore.com/res/image/data/WbSJHDh5-UHhQ6Y1N.png",
   },
   bahia: {
     name: "Bahia",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Bahia_HomeFront_25_26.svg",
+      "https://static.flashscore.com/res/image/data/f5V5z1Cr-dKUmd286.png",
   },
   botafogorj: {
     name: "Botafogo/RJ",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Botafogo_Front_Home_25_26.svg",
+      "https://static.flashscore.com/res/image/data/jBDSUABr-ldMpXQG1.png",
   },
   bragantino: {
     name: "RB Bragantino",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Red%20Bull%20Bragantino_Home_25_26.svg",
+      "https://static.flashscore.com/res/image/data/llnonZDa-UkMF8Udb.png",
   },
   ceara: {
     name: "Ceará",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Ceara_Home_front_25_26.svg",
+      "https://static.flashscore.com/res/image/data/lO0NK6f5-GxV9h1lf.png",
   },
   corinthians: {
     name: "Corinthians",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Corinthians_Front_2526.svg",
+      "https://static.flashscore.com/res/image/data/lY91WW9r-6cpWH3kh.png",
   },
   cruzeiro: {
     name: "Cruzeiro",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Cruzeiro_Home_front_25_26.svg",
+      "https://static.flashscore.com/res/image/data/lCWrxmg5-SjJmyx86.png",
   },
   flamengo: {
     name: "Flamengo",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Flamengo_Home_25.svg",
+      "https://static.flashscore.com/res/image/data/ADvIaiZA-2R2JjDQC.png",
   },
   fluminense: {
     name: "Fluminense",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Fluminense_Home_25.svg",
+      "https://static.flashscore.com/res/image/data/WlxJgSdM-WUfDDYk1.png",
   },
   fortaleza: {
     name: "Fortaleza",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Fortaleza_Home_Front_2526.svg",
+      "https://static.flashscore.com/res/image/data/ObufU2YA-MyVrJL5S.png",
   },
   gremio: {
     name: "Grêmio",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Gremio_home_front_25_26.svg",
+      "https://static.flashscore.com/res/image/data/QPdJscAr-tQsU6dGl.png",
   },
   internacional: {
     name: "Internacional/RS",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Internacional_HomeFront_25_26.svg",
+      "https://static.flashscore.com/res/image/data/4EdoEoil-ALgHCh57.png",
   },
   juventude: {
     name: "Juventude",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Juventude_home_front_25_26.svg",
+      "https://static.flashscore.com/res/image/data/CA0V6qXg-v5wBaFPD.png",
   },
   mirassol: {
     name: "Mirassol",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Mirassol_HomeFront_25_26.svg",
+      "https://static.flashscore.com/res/image/data/SUmYTyAr-fVnYQB8j.png",
   },
   palmeiras: {
     name: "Palmeiras",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Palmeiras%20Home%2025_26.svg",
+      "https://static.flashscore.com/res/image/data/xCtpyPHG-ALgHCh57.png",
   },
   santos: {
     name: "Santos",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Santos%20home_front_25_26.svg",
+      "https://static.flashscore.com/res/image/data/rJGaKUhl-hv442jSk.png",
   },
   saopaulo: {
     name: "São Paulo",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Sao%20Paulo%20Home_front25_26.svg",
+      "https://static.flashscore.com/res/image/data/YgK3qNCa-AkTesf41.png",
   },
   sportrecife: {
     name: "Sport Recife",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Sport%20Recife%20Home%2025_26.svg",
+      "https://static.flashscore.com/res/image/data/O0aua6ZA-fezSJdFa.png",
   },
   vitoria: {
     name: "Vitória/BA",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Vitoria%20Home_front_25_26.svg",
+      "https://static.flashscore.com/res/image/data/EglYBtxS-QwRlGht5.png",
   },
   vasco: {
     name: "Vasco",
     logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Serie%20A%20Vasco_Da_Gama_Home_Front_25_26.svg",
+      "https://static.flashscore.com/res/image/data/d2irXNjl-bam8o1Nj.png",
   },
   remo: {
     name: "Remo",
@@ -178,7 +178,7 @@ const TEAMS = {
   criciuma: {
     name: "Criciúma",
     logoUrl:
-      "https://static.flashscore.com/res/image/data/E9b6grZg-WQONyUDH.png",
+      "https://static.flashscore.com/res/image/data/E9b6grZg-0tyg52jq.png",
   },
   arsenal: {
     name: "Arsenal",
@@ -232,7 +232,7 @@ if (signupBtn) {
     // validar pixKey se preenchido
     if (pixKey && !isValidPixKey(pixKey)) {
       alert(
-        "Chave PIX inválida. Informe email, CPF, telefone ou chave aleatória válida."
+        "Chave PIX inválida. Informe email, CPF, telefone ou chave aleatória válida.",
       );
       return;
     }
@@ -248,7 +248,7 @@ if (signupBtn) {
       const userCred = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       const user = userCred.user;
 
