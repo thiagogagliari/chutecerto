@@ -383,7 +383,7 @@ t {
   width: 90px;
   text-align: right;
   font-weight: bold;
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 
 .ranking-move {
@@ -1201,7 +1201,7 @@ button:active {
   width: 80px;
   text-align: right;
   font-weight: 600;
-  font-size: 1.35rem;
+  font-size: 1rem;
 }
 
 .ranking-move {
@@ -2120,7 +2120,7 @@ span{
   }
 
   .ranking-points {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .ranking-move {
