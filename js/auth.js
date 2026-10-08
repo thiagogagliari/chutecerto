@@ -180,11 +180,6 @@ const TEAMS = {
     logoUrl:
       "https://static.flashscore.com/res/image/data/E9b6grZg-0tyg52jq.png",
   },
-  arsenal: {
-    name: "Arsenal",
-    logoUrl:
-      "https://content001.bet365.bet.br/SoccerSilks/Arsenal_HomeFront_25_26.svg",
-  },
   // adicione outros times aqui
 };
 
