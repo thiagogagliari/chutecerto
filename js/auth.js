@@ -61,7 +61,7 @@ const TEAMS = {
       "https://static.flashscore.com/res/image/data/llnonZDa-UkMF8Udb.png",
   },
   ceara: {
-    name: "Ceará",
+    name: "ceara",
     logoUrl:
       "https://static.flashscore.com/res/image/data/lO0NK6f5-GxV9h1lf.png",
   },
@@ -86,7 +86,7 @@ const TEAMS = {
       "https://static.flashscore.com/res/image/data/WlxJgSdM-WUfDDYk1.png",
   },
   fortaleza: {
-    name: "Fortaleza",
+    name: "fortaleza",
     logoUrl:
       "https://static.flashscore.com/res/image/data/ObufU2YA-MyVrJL5S.png",
   },
@@ -111,12 +111,12 @@ const TEAMS = {
       "https://static.flashscore.com/res/image/data/SUmYTyAr-fVnYQB8j.png",
   },
   palmeiras: {
-    name: "Palmeiras",
+    name: "palmeiras",
     logoUrl:
       "https://static.flashscore.com/res/image/data/xCtpyPHG-ALgHCh57.png",
   },
   santos: {
-    name: "Santos",
+    name: "santos",
     logoUrl:
       "https://static.flashscore.com/res/image/data/rJGaKUhl-hv442jSk.png",
   },
